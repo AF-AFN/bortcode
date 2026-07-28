@@ -3,26 +3,28 @@
   import * as Blockly from 'blockly';
   import { bartcodeGenerator } from './blocks/generator.js';
   import { runBartcode } from './interpreter/interpreter.js';
+  import { toolboxXML } from './blocks/toolbox.js';
   import './blocks/bartcode_blocks.js';
 
   let blocklyDiv;
   let workspace;
-  let consoleOutput = 'Ready...\n';
+  let consoleOutput = 'ready...\n';
 
   function handleRun() {
     const code = bartcodeGenerator.workspaceToCode(workspace);
-    consoleOutput = runBartcode(code);
+    runBartcode(code, (newOutput) => {
+      consoleOutput = newOutput;
+    });
   }
 
   onMount(() => {
     workspace = Blockly.inject(blocklyDiv, {
-      toolbox: `
-        <xml>
-          <block type="bart_put"></block>
-          <block type="bart_string"></block>
-          <block type="bart_clear"></block>
-        </xml>
-      `
+      toolbox: toolboxXML,
+      renderer: 'zelos',
+      theme: Blockly.Theme.defineTheme('scratchTheme', {
+        'base': Blockly.Themes.Classic,
+        'startHats': true
+      })
     });
   });
 </script>

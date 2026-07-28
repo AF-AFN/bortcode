@@ -16,6 +16,8 @@ Blockly.Blocks['bart_on_run'] = {
 
 /* COMMANDS */
 
+/* SCREEN */
+
 // put
 Blockly.Blocks['bart_put'] = {
   init: function() {
@@ -37,13 +39,34 @@ Blockly.Blocks['bart_clear'] = {
         .appendField('clear console');
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
-    this.setColour(200);
+    this.setColour(160);
     this.setTooltip('Clears the screen.');
     this.setHelpUrl('');
   }
 };
 
+/* CONTROL */
+
+// wait [n] secs
+Blockly.Blocks['bart_wait'] = {
+  init: function() {
+    this.appendValueInput('SECONDS')
+        .setCheck('Number')
+        .appendField('wait');
+    this.appendDummyInput()
+        .appendField('secs');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Pauses execution for a specified number of seconds.');
+    this.setHelpUrl('');
+  }
+};
+
+
 /* ARGUMENTS */
+
+/* STRINGS */
 
 // string
 Blockly.Blocks['bart_string'] = {
@@ -55,6 +78,35 @@ Blockly.Blocks['bart_string'] = {
     this.setOutput(true, 'String');
     this.setColour(230);
     this.setTooltip('A literal string.');
+    this.setHelpUrl('');
+  }
+};
+
+// join [str] [str]
+Blockly.Blocks['bart_join'] = {
+  init: function() {
+    this.appendValueInput('STR1')
+        .setCheck('String')
+        .appendField('join');
+    this.appendValueInput('STR2')
+        .setCheck('String');
+    this.setOutput(true, 'String');
+    this.setColour(230);
+    this.setTooltip('Joins two strings together.');
+    this.setHelpUrl('');
+  }
+};
+
+/* NUMBERS */
+
+// number
+Blockly.Blocks['bart_number'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldTextInput('1', Blockly.FieldTextInput.numberValidator), 'VALUE');
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('A literal number.');
     this.setHelpUrl('');
   }
 };

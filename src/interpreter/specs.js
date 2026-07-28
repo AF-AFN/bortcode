@@ -1,6 +1,7 @@
-import { primPut, primClear } from './prims.js';
+import { primPut, primClear, primWait } from './prims.js';
 
 export const primitiveSpecs = {
   'PRINT': primPut,
-  'CLEAR': primClear
+  'CLEAR': primClear,
+  'WAIT': primWait
 };

@@ -18,12 +18,17 @@ bartcodeGenerator.forBlock['bart_on_run'] = function(block, generator) {
 /* COMMANDS */
 
 bartcodeGenerator.forBlock['bart_put'] = function(block, generator) {
-  let argument0 = generator.valueToCode(block, 'TEXT', generator.ORDER_NONE) || '""';
-  return 'PRINT ' + argument0 + '\n';
+  let textCode = generator.valueToCode(block, 'TEXT', generator.ORDER_NONE) || '""';
+  return 'PRINT ' + textCode + '\n';
 };
 
 bartcodeGenerator.forBlock['bart_clear'] = function(block, generator) {
   return 'CLEAR\n';
+};
+
+bartcodeGenerator.forBlock['bart_wait'] = function(block, generator) {
+  let timeVal = generator.valueToCode(block, 'SECONDS', generator.ORDER_NONE) || '1';
+  return 'WAIT ' + timeVal + '\n';
 };
 
 /* ARGUMENTS */
@@ -31,6 +36,17 @@ bartcodeGenerator.forBlock['bart_clear'] = function(block, generator) {
 bartcodeGenerator.forBlock['bart_string'] = function(block, generator) {
   let textValue = block.getFieldValue('VALUE');
   return ['"' + textValue + '"', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_number'] = function(block, generator) {
+  let numValue = block.getFieldValue('VALUE');
+  return [numValue, bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_join'] = function(block, generator) {
+  let str1 = generator.valueToCode(block, 'STR1', generator.ORDER_NONE) || '""';
+  let str2 = generator.valueToCode(block, 'STR2', generator.ORDER_NONE) || '""';
+  return ['JOIN(' + str1 + ', ' + str2 + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
