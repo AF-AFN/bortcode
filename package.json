@@ -1,0 +1,32 @@
+{
+  "name": "bartcode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode development",
+    "dev": "webpack serve --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bart-technologies/bartcode.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bart-technologies/bartcode/issues"
+  },
+  "homepage": "https://github.com/bart-technologies/bartcode#readme",
+  "devDependencies": {
+    "css-loader": "^7.1.4",
+    "sirv-cli": "^3.0.1",
+    "style-loader": "^4.0.0",
+    "svelte": "^5.56.8",
+    "svelte-loader": "^3.2.4",
+    "webpack": "^5.109.1",
+    "webpack-cli": "^7.2.1",
+    "webpack-dev-server": "^6.0.0"
+  }
+}
