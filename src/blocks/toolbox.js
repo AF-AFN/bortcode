@@ -17,6 +17,11 @@ export const toolboxXML = `
         </block>
       </value>
     </block>
+    <block type="bart_wait_until">
+      <value name="CONDITION">
+        <block type="bart_true"></block>
+      </value>
+    </block>
     <block type="bart_repeat"></block>
     <block type="bart_while"></block>
     <block type="bart_if_else"></block>
@@ -25,9 +30,6 @@ export const toolboxXML = `
   <category name="Strings" colour="160">
     <block type="bart_string"></block>
     <block type="bart_join"></block>
-    <block type="bart_to_number"></block>
-    <block type="bart_to_string"></block>
-    <block type="bart_to_boolean"></block>
   </category>
   <category name="Numbers" colour="230">
     <block type="bart_number"></block>
@@ -35,6 +37,23 @@ export const toolboxXML = `
     <block type="bart_subtract"></block>
     <block type="bart_multiply"></block>
     <block type="bart_divide"></block>
+    <block type="bart_rand">
+      <value name="FROM">
+        <block type="bart_number">
+          <field name="VALUE">1</field>
+        </block>
+      </value>
+      <value name="TO">
+        <block type="bart_number">
+          <field name="VALUE">10</field>
+        </block>
+      </value>
+    </block>
+  </category>
+  <category name="Conversions" colour="160">
+    <block type="bart_to_number"></block>
+    <block type="bart_to_string"></block>
+    <block type="bart_to_boolean"></block>
   </category>
   <category name="Logic" colour="210">
     <block type="bart_logic_op"></block>

@@ -16,6 +16,10 @@ bartcodeGenerator.forBlock['bart_on_run'] = function(block, generator) {
 
 bartcodeGenerator.forBlock['bart_put'] = function(block, generator) {
   let textCode = generator.valueToCode(block, 'TEXT', generator.ORDER_NONE) || '""';
+  let mode = block.getFieldValue('MODE');
+  if (mode === 'NEWLINE') {
+    return 'PRINTLN ' + textCode + '\n';
+  }
   return 'PRINT ' + textCode + '\n';
 };
 
@@ -87,6 +91,11 @@ bartcodeGenerator.forBlock['bart_case'] = function(block, generator) {
   return 'CASE ' + value + '\n' + doCode;
 };
 
+bartcodeGenerator.forBlock['bart_wait_until'] = function(block, generator) {
+  let condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_ATOMIC) || 'false';
+  return 'WAITUNTIL (' + condition + ')\n';
+};
+
 bartcodeGenerator.forBlock['bart_repeat'] = function(block, generator) {
   var value_times = generator.valueToCode(block, 'TIMES', generator.ORDER_ATOMIC) || '0';
   var statements_do = generator.statementToCode(block, 'DO');
@@ -135,6 +144,12 @@ bartcodeGenerator.forBlock['bart_divide'] = function(block, generator) {
   let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
   let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '1';
   return ['DIV(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_rand'] = function(block, generator) {
+  let from = generator.valueToCode(block, 'FROM', generator.ORDER_NONE) || '0';
+  let to = generator.valueToCode(block, 'TO', generator.ORDER_NONE) || '1';
+  return ['RAND(' + from + ', ' + to + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.forBlock['bart_to_number'] = function(block, generator) {

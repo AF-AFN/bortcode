@@ -25,6 +25,11 @@ Blockly.Blocks['bart_put'] = {
     this.appendValueInput('TEXT')
         .setCheck('String')
         .appendField('put');
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldDropdown([
+          ['\\n', 'NEWLINE'],
+          ['-', 'NO_NEWLINE']
+        ]), 'MODE');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
@@ -107,6 +112,21 @@ Blockly.Blocks['bart_repeat'] = {
     this.setNextStatement(true, null);
     this.setColour(120);
     this.setTooltip('Repeats the contained blocks a specified number of times.');
+    this.setHelpUrl('');
+  }
+};
+
+// wait until
+Blockly.Blocks['bart_wait_until'] = {
+  init: function() {
+    this.appendValueInput('CONDITION')
+        .setCheck('Boolean')
+        .appendField('wait until');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Waits until the condition is true.');
     this.setHelpUrl('');
   }
 };
@@ -573,6 +593,23 @@ Blockly.Blocks['bart_divide'] = {
     this.setOutput(true, 'Number');
     this.setColour(230);
     this.setTooltip('Divides two numbers.');
+    this.setHelpUrl('');
+  }
+};
+
+// rand
+Blockly.Blocks['bart_rand'] = {
+  init: function() {
+    this.appendValueInput('FROM')
+        .setCheck('Number')
+        .appendField('rand');
+    this.appendValueInput('TO')
+        .setCheck('Number')
+        .appendField('to');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Returns a random number between from and to.');
     this.setHelpUrl('');
   }
 };

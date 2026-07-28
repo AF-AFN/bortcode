@@ -12,6 +12,10 @@ export function primPut(arg, context) {
       context.cursorX++;
     }
   }
+}
+
+export function primPutln(arg, context) {
+  primPut(arg, context);
   context.cursorX = 0;
   context.cursorY++;
 }
@@ -132,6 +136,19 @@ export function primEndRepeat(arg, context) {
     } else {
       context.controlStack.pop();
     }
+  }
+}
+
+export function primWaitUntil(arg, context) {
+  let inner = arg.trim();
+  if (inner.startsWith('(') && inner.endsWith(')')) {
+    inner = inner.substring(1, inner.length - 1);
+  }
+  let condition = evaluateExpression(inner, context);
+  let isTrue = condition === true || condition === 'true' || condition === '1';
+
+  if (!isTrue) {
+    context.pc--;
   }
 }
 
@@ -362,6 +379,19 @@ function evaluateExpression(expr, context) {
     }
 
     return returnValue;
+  }
+
+  // RAND
+  if (expr.startsWith('RAND(') && expr.endsWith(')')) {
+    let inner = expr.substring(5, expr.length - 1);
+    let splitIndex = findCommaSplitIndex(inner);
+    let fromExpr = inner.substring(0, splitIndex).trim();
+    let toExpr = inner.substring(splitIndex + 1).trim();
+    let from = parseFloat(evaluateExpression(fromExpr, context)) || 0;
+    let to = parseFloat(evaluateExpression(toExpr, context)) || 1;
+    let min = Math.min(from, to);
+    let max = Math.max(from, to);
+    return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
   // TO_NUMBER
