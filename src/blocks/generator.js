@@ -179,6 +179,33 @@ bartcodeGenerator.forBlock['bart_load'] = function(block, generator) {
   return ['LOAD(' + addr + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
+/* FUNCTIONS */
+bartcodeGenerator.forBlock['bart_function'] = function(block, generator) {
+  let name = block.getFieldValue('NAME');
+  let bodyCode = generator.statementToCode(block, 'BODY') || '';
+  return 'FUNCTION ' + name + '\n' + bodyCode + 'ENDFUNCTION\n';
+};
+
+bartcodeGenerator.forBlock['bart_call_function'] = function(block, generator) {
+  let name = block.getFieldValue('NAME');
+  return 'CALL ' + name + '\n';
+};
+
+bartcodeGenerator.forBlock['bart_call_boolean'] = function(block, generator) {
+  let name = block.getFieldValue('NAME');
+  return ['CALL(' + name + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_call_value'] = function(block, generator) {
+  let name = block.getFieldValue('NAME');
+  return ['CALL(' + name + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_return'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '';
+  return 'RETURN' + (value ? ' ' + value : '') + '\n';
+};
+
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
   let nextBlock = block.nextConnection && block.nextConnection.targetBlock();
   let nextCode = '';
@@ -189,6 +216,8 @@ bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
   }
   return code + nextCode;
 };
+
+const TOP_LEVEL_ROOT_TYPES = ['bart_on_run', 'bart_function'];
 
 bartcodeGenerator.workspaceToCode = function(workspace) {
   if (!workspace) {
@@ -203,12 +232,10 @@ bartcodeGenerator.workspaceToCode = function(workspace) {
   for (let i = 0; i < topBlocks.length; i++) {
     const block = topBlocks[i];
 
-    // skips anything not nested inside the when run event :^ 
-    if (block.type !== 'bart_on_run') {
+    if (!TOP_LEVEL_ROOT_TYPES.includes(block.type)) {
       continue;
     }
 
-    // Skip disabled event blocks too.
     if (typeof block.isEnabled === 'function' && !block.isEnabled()) {
       continue;
     }
