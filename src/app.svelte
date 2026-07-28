@@ -2,30 +2,49 @@
   import { onMount } from 'svelte';
   import * as Blockly from 'blockly';
   import { bartcodeGenerator } from './blocks/generator.js';
+  import { runBartcode } from './interpreter/interpreter.js';
+  import './blocks/bartcode_blocks.js';
 
   let blocklyDiv;
   let workspace;
-  let consoleOutput = '';
+  let consoleOutput = 'Ready...\n';
+
+  function handleRun() {
+    const code = bartcodeGenerator.workspaceToCode(workspace);
+    consoleOutput = runBartcode(code);
+  }
 
   onMount(() => {
     workspace = Blockly.inject(blocklyDiv, {
-        // temporary
       toolbox: `
         <xml>
           <block type="bart_put"></block>
           <block type="bart_string"></block>
+          <block type="bart_clear"></block>
         </xml>
       `
-    });
-
-    workspace.addChangeListener(() => {
-      consoleOutput = bartcodeGenerator.workspaceToCode(workspace);
     });
   });
 </script>
 
 <!-- also temporary -->
 <style>
+    .toolbar {
+        margin-bottom: 10px;
+    }
+    .toolbar button {
+        padding: 8px 16px;
+        font-size: 1rem;
+        font-weight: bold;
+        background: #28a745;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .toolbar button:hover {
+        background: #218838;
+    }
   .editor-container {
     display: flex;
     height: calc(100vh - 80px);
@@ -51,9 +70,13 @@
 
 <h1>Bartcode</h1>
 
+<div class="toolbar">
+  <button on:click={handleRun}>Run code</button>
+</div>
+
 <div class="editor-container">
   <div bind:this={blocklyDiv} class="workspace"></div>
   <div class="console">
-    {consoleOutput || 'ready'}
+    {consoleOutput}
   </div>
 </div>
