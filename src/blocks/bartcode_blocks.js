@@ -1,16 +1,18 @@
 import * as Blockly from 'blockly';
 
-/* CAPS */
+/* EVENTS */
 
+// runs when the run button is clicked. Any stray top-level blocks
 Blockly.Blocks['bart_on_run'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField('on run');
+        .appendField('When run');
     this.setPreviousStatement(false, null);
     this.setNextStatement(true, null);
     this.setColour(290);
-    this.setTooltip('Entry point when the program runs.');
+    this.setTooltip('Runs the attached blocks when the run button is clicked. Blocks not connected to this event will not run.');
     this.setHelpUrl('');
+    this.hat = 'cap';
   }
 };
 
@@ -182,7 +184,7 @@ Blockly.Blocks['bart_if_else'] = {
     let elseifCount = parseInt(this.getFieldValue('ELSEIF_COUNT'), 10) || 0;
     if (elseifCount < 0) elseifCount = 0;
     if (elseifCount > 10) elseifCount = 10;
-    
+
     // Handle elseif inputs
     for (let i = 1; i <= this.elseifCount_; i++) {
       if (this.getInput('ELSEIF' + i)) {
@@ -192,7 +194,7 @@ Blockly.Blocks['bart_if_else'] = {
         this.removeInput('DO' + i);
       }
     }
-    
+
     for (let i = 1; i <= elseifCount; i++) {
       this.appendValueInput('ELSEIF' + i)
           .setCheck('Boolean')
@@ -200,9 +202,9 @@ Blockly.Blocks['bart_if_else'] = {
       this.appendStatementInput('DO' + i)
           .appendField('do');
     }
-    
+
     this.elseifCount_ = elseifCount;
-    
+
     // Handle else input based on mode
     if (mode === 'IF') {
       if (this.getInput('ELSE')) {
@@ -214,7 +216,7 @@ Blockly.Blocks['bart_if_else'] = {
             .appendField('else');
       }
     }
-    
+
     // Show/hide elseif count input based on mode
     if (mode === 'IF_ELSEIF_ELSE') {
       if (!this.getInput('ELSEIF_COUNT_INPUT')) {
@@ -260,7 +262,7 @@ Blockly.Blocks['bart_switch_case'] = {
   },
   updateShape: function() {
     let hasDefault = this.getFieldValue('HAS_DEFAULT') === 'YES';
-    
+
     if (hasDefault) {
       if (!this.getInput('DEFAULT')) {
         this.appendStatementInput('DEFAULT')
