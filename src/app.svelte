@@ -6,6 +6,7 @@
   import { toolboxXML } from './blocks/toolbox.js';
   import { initKeyboard } from './keyboard.js';
   import RamBar from './RamBar.svelte';
+  import CrtOverlay from './CrtOverlay.svelte';
   import './blocks/bartcode_blocks.js';
   import './app.css';
 
@@ -14,11 +15,14 @@
   let consoleOutput = 'ready...\n';
   let ramUsed = 0;
   let ramTotal = 524288;
-  let renderer = 'zelos';
+  let renderer = localStorage.getItem('bartcode_renderer') || 'zelos';
   let running = false;
   let stopBartcode = null;
   let fileOpen = false;
   let fileInput;
+  let toolsOpen = false;
+  let prefsOpen = false;
+  let shadersEnabled = localStorage.getItem('bartcode_shaders') === 'true';
 
   function handleRun() {
     if (running && stopBartcode) {
@@ -48,6 +52,7 @@
   function handleRendererChange(e) {
     let newRenderer = e.target.value;
     if (newRenderer === renderer) return;
+    localStorage.setItem('bartcode_renderer', newRenderer);
     let state = Blockly.serialization.workspaces.save(workspace);
     workspace.dispose();
     renderer = newRenderer;
@@ -99,12 +104,24 @@
       e.preventDefault();
       handleSave();
     }
+    if (e.key === 'Escape') {
+      prefsOpen = false;
+      toolsOpen = false;
+    }
   }
 
-  function closeFileMenu(e) {
+  function closeMenus(e) {
     if (fileOpen && !e.target.closest('.file-menu')) {
       fileOpen = false;
     }
+    if (toolsOpen && !e.target.closest('.tools-menu') && !e.target.closest('.modal-overlay') && !e.target.closest('.modal')) {
+      toolsOpen = false;
+    }
+  }
+
+  function closePrefs() {
+    prefsOpen = false;
+    toolsOpen = false;
   }
 
   onMount(() => {
@@ -118,7 +135,7 @@
       })
     });
     document.addEventListener('keydown', handleKeydown);
-    document.addEventListener('click', closeFileMenu);
+    document.addEventListener('click', closeMenus);
   });
 </script>
 
@@ -131,6 +148,14 @@
         <div class="file-dropdown">
           <button class="dropdown-item" on:click={handleSave}>Save</button>
           <button class="dropdown-item" on:click={() => { fileOpen = false; fileInput.click(); }}>Load</button>
+        </div>
+      {/if}
+    </div>
+    <div class="tools-menu">
+      <button class="file-btn" on:click={() => toolsOpen = !toolsOpen}>Tools</button>
+      {#if toolsOpen}
+        <div class="file-dropdown">
+          <button class="dropdown-item" on:click={() => { toolsOpen = false; prefsOpen = true; }}>Preferences</button>
         </div>
       {/if}
     </div>
@@ -156,5 +181,27 @@
   <div bind:this={blocklyDiv} class="workspace"></div>
   <div class="console">
     {consoleOutput}
+    {#if shadersEnabled}
+      <CrtOverlay text={consoleOutput} />
+    {/if}
   </div>
 </div>
+
+{#if prefsOpen}
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+  <div class="modal-overlay" on:click={closePrefs}></div>
+  <div class="modal">
+    <div class="modal-header">
+      <span>Preferences</span>
+      <button class="modal-close" on:click={closePrefs}>&times;</button>
+    </div>
+    <div class="modal-body">
+      <label class="pref-row">
+        <input type="checkbox" bind:checked={shadersEnabled} on:change={() => localStorage.setItem('bartcode_shaders', shadersEnabled)} />
+        <span>Special Shaders (CRT effect)</span>
+      </label>
+    </div>
+  </div>
+{/if}
+
+
