@@ -7,15 +7,30 @@ export function runBartcode(code, onOutputUpdate) {
   }
 
   let lines = code.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  
+  const WIDTH = 80;
+  const HEIGHT = 30;
+  let grid = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(' '));
+
   let context = {
-    outputBuffer: ''
+    outputBuffer: '',
+    grid: grid,
+    width: WIDTH,
+    height: HEIGHT,
+    controlStack: [] 
   };
 
   let pc = 0;
 
+  const CONTROL_KEYWORDS = ['IF', 'ELSE', 'ENDIF', 'REPEAT', 'ENDREPEAT'];
+
+  function renderGrid() {
+    return context.grid.map(row => row.join('')).join('\n');
+  }
+
   function step() {
     if (pc >= lines.length) {
-      onOutputUpdate(context.outputBuffer || 'ready...\n');
+      onOutputUpdate(renderGrid());
       return;
     }
 
@@ -23,20 +38,32 @@ export function runBartcode(code, onOutputUpdate) {
     pc++;
 
     let spaceIndex = line.indexOf(' ');
-    let keyword = spaceIndex === -1 ? line : line.substring(0, spaceIndex);
-    let arg = spaceIndex === -1 ? '' : line.substring(spaceIndex + 1);
+    let parenIndex = line.indexOf('(');
+    let splitIndex = spaceIndex;
+    if (parenIndex !== -1 && (spaceIndex === -1 || parenIndex < spaceIndex)) {
+      splitIndex = parenIndex;
+    }
+
+    let keyword = splitIndex === -1 ? line : line.substring(0, splitIndex);
+    let arg = splitIndex === -1 ? '' : line.substring(splitIndex);
+
+    let top = context.controlStack[context.controlStack.length - 1];
+    let shouldSkip = top && top.skip;
+    let isControlFlow = CONTROL_KEYWORDS.includes(keyword);
 
     if (primitiveSpecs[keyword]) {
-      let result = primitiveSpecs[keyword](arg, context);
+      if (!shouldSkip || isControlFlow) {
+        let result = primitiveSpecs[keyword](arg, context);
 
-      if (typeof result === 'number' && result > 0) {
-        onOutputUpdate(context.outputBuffer);
-        setTimeout(step, result);
-        return;
+        if (typeof result === 'number' && result > 0) {
+          onOutputUpdate(renderGrid());
+          setTimeout(step, result);
+          return;
+        }
       }
     }
 
-    onOutputUpdate(context.outputBuffer);
+    onOutputUpdate(renderGrid());
     step();
   }
 

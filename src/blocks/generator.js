@@ -31,6 +31,55 @@ bartcodeGenerator.forBlock['bart_wait'] = function(block, generator) {
   return 'WAIT ' + timeVal + '\n';
 };
 
+bartcodeGenerator.forBlock['bart_move'] = function(block, generator) {
+  let fromCol = generator.valueToCode(block, 'FROM_COL', generator.ORDER_NONE) || '0';
+  let fromRow = generator.valueToCode(block, 'FROM_ROW', generator.ORDER_NONE) || '0';
+  let toCol = generator.valueToCode(block, 'TO_COL', generator.ORDER_NONE) || '0';
+  let toRow = generator.valueToCode(block, 'TO_ROW', generator.ORDER_NONE) || '0';
+  
+  return 'MOVE(' + fromCol + ', ' + fromRow + ', ' + toCol + ', ' + toRow + ')\n';
+};
+
+bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
+  let condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_NONE) || 'true';
+  let doCode = generator.statementToCode(block, 'DO') || '';
+  let mode = block.getFieldValue('MODE');
+  let elseifCount = block.elseifCount_ || 0;
+  
+  let code = 'IF ' + condition + '\n' + doCode;
+  
+  // Handle elseif blocks
+  for (let i = 1; i <= elseifCount; i++) {
+    let elseifCondition = generator.valueToCode(block, 'ELSEIF' + i, generator.ORDER_NONE) || 'true';
+    let elseifDo = generator.statementToCode(block, 'DO' + i) || '';
+    code += 'ELSEIF ' + elseifCondition + '\n' + elseifDo;
+  }
+  
+  // Handle else block based on mode
+  if (mode !== 'IF') {
+    let elseCode = generator.statementToCode(block, 'ELSE') || '';
+    code += 'ELSE\n' + elseCode;
+  }
+  
+  code += 'ENDIF\n';
+  return code;
+};
+
+bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
+  let cases = generator.statementToCode(block, 'CASES') || '';
+  let hasDefault = block.getFieldValue('HAS_DEFAULT') === 'YES';
+  let code = 'SWITCH ' + value + '\n' + cases;
+  
+  if (hasDefault) {
+    let defaultCode = generator.statementToCode(block, 'DEFAULT') || '';
+    code += 'DEFAULT\n' + defaultCode;
+  }
+  
+  code += 'ENDSWITCH\n';
+  return code;
+};
+
 /* ARGUMENTS */
 
 bartcodeGenerator.forBlock['bart_string'] = function(block, generator) {
@@ -43,10 +92,52 @@ bartcodeGenerator.forBlock['bart_number'] = function(block, generator) {
   return [numValue, bartcodeGenerator.ORDER_ATOMIC];
 };
 
+bartcodeGenerator.forBlock['bart_add'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
+  return ['ADD(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_subtract'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
+  return ['SUB(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_multiply'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
+  return ['MUL(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_divide'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '1';
+  return ['DIV(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
 bartcodeGenerator.forBlock['bart_join'] = function(block, generator) {
   let str1 = generator.valueToCode(block, 'STR1', generator.ORDER_NONE) || '""';
   let str2 = generator.valueToCode(block, 'STR2', generator.ORDER_NONE) || '""';
   return ['JOIN(' + str1 + ', ' + str2 + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_logic_op'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || 'true';
+  let op = block.getFieldValue('OP');
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || 'true';
+  return [op + '(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_not'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || 'true';
+  return ['NOT(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_equals'] = function(block, generator) {
+  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
+  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
+  return ['EQ(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
