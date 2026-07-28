@@ -2,7 +2,7 @@ import * as Blockly from 'blockly';
 
 /* EVENTS */
 
-// runs when the run button is clicked. Any stray top-level blocks
+// runs when the run button is clicked.
 Blockly.Blocks['bart_on_run'] = {
   init: function() {
     this.appendDummyInput()
