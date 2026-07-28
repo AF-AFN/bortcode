@@ -1,4 +1,4 @@
-import { primPut, primClear, primWait, primIf, primElseif, primElse, primEndif, primSwitch, primDefault, primEndswitch, primMove, primEndRepeat, primRepeat, primWhile, primEndWhile, primStore, primFlushRam } from './prims.js';
+import { primPut, primClear, primWait, primIf, primElseif, primElse, primEndif, primSwitch, primDefault, primEndswitch, primMove, primEndRepeat, primRepeat, primWhile, primEndWhile, primStore, primFlushRam, primFunction, primEndFunction, primCall, primReturn } from './prims.js';
 
 export const primitiveSpecs = {
   'PRINT': primPut,
@@ -17,5 +17,9 @@ export const primitiveSpecs = {
   'WHILE': primWhile,
   'ENDWHILE': primEndWhile,
   'STORE': primStore,
-  'FLUSHRAM': primFlushRam
+  'FLUSHRAM': primFlushRam,
+  'FUNCTION': primFunction,
+  'ENDFUNCTION': primEndFunction,
+  'CALL': primCall,
+  'RETURN': primReturn
 };

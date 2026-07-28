@@ -1,4 +1,5 @@
 import { isKeyPressed } from '../keyboard.js';
+import { primitiveSpecs } from './specs.js';
 
 export function primPut(arg, context) {
   let textVal = evaluateExpression(arg, context);
@@ -297,6 +298,58 @@ function evaluateExpression(expr, context) {
     return context.memory[addr] || '0';
   }
 
+  // CALL expression - synchronous function execution
+  if (expr.startsWith('CALL(') && expr.endsWith(')')) {
+    let inner = expr.substring(5, expr.length - 1);
+    let name = evaluateExpression(inner.trim(), context);
+    let funcDef = context.functions[name];
+    if (!funcDef) return '';
+
+    let savedPc = context.pc;
+    let savedControlDepth = context.controlStack.length;
+    let savedCallDepth = context.callStack.length;
+    let returnValue = '';
+
+    context.pc = funcDef.startLine + 1;
+
+    while (context.pc >= 0 && context.pc < context.lines.length) {
+      let line = context.lines[context.pc];
+      context.pc++;
+
+      let spaceIdx = line.indexOf(' ');
+      let parenIdx = line.indexOf('(');
+      let splitBy = spaceIdx;
+      if (parenIdx !== -1 && (splitBy === -1 || parenIdx < splitBy)) {
+        splitBy = parenIdx;
+      }
+      let kw = splitBy === -1 ? line : line.substring(0, splitBy);
+      let a = splitBy === -1 ? '' : line.substring(splitBy);
+
+      if (kw === 'RETURN') {
+        returnValue = evaluateExpression(a.trim(), context);
+        break;
+      }
+
+      if (kw === 'ENDFUNCTION') {
+        break;
+      }
+
+      if (primitiveSpecs[kw]) {
+        primitiveSpecs[kw](a, context);
+      }
+    }
+
+    context.pc = savedPc;
+    while (context.controlStack.length > savedControlDepth) {
+      context.controlStack.pop();
+    }
+    while (context.callStack.length > savedCallDepth) {
+      context.callStack.pop();
+    }
+
+    return returnValue;
+  }
+
   if ((expr.startsWith('"') && expr.endsWith('"')) || 
       (expr.startsWith("'") && expr.endsWith("'"))) {
     return expr.slice(1, -1);
@@ -324,6 +377,36 @@ export function primMove(arg, context) {
 
     context.grid[fromRow][fromCol] = ' ';
     context.grid[toRow][toCol] = charToMove;
+  }
+}
+
+export function primFunction(arg, context) {
+  let name = arg.trim();
+  let funcDef = context.functions[name];
+  if (funcDef) {
+    context.pc = funcDef.endLine + 1;
+  }
+}
+
+export function primCall(arg, context) {
+  let name = arg.trim();
+  let funcDef = context.functions[name];
+  if (funcDef) {
+    context.callStack.push(context.pc);
+    context.pc = funcDef.startLine + 1;
+  }
+}
+
+export function primEndFunction(arg, context) {
+  if (context.callStack.length > 0) {
+    context.pc = context.callStack.pop();
+  }
+}
+
+export function primReturn(arg, context) {
+  evaluateExpression(arg.trim(), context);
+  if (context.callStack.length > 0) {
+    context.pc = context.callStack.pop();
   }
 }
 
