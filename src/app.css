@@ -74,6 +74,19 @@ body {
   background: #218838;
 }
 
+.toolbar button.stop-btn {
+  background: #dc3545;
+}
+
+.toolbar button.stop-btn:hover {
+  background: #c82333;
+}
+
+.toolbar button.stop-btn:disabled {
+  background: #6c757d;
+  cursor: default;
+}
+
 .editor-container {
   display: flex;
   height: calc(100vh - 50px);

@@ -2,12 +2,14 @@ import { primitiveSpecs } from './specs.js';
 
 const RAM_TOTAL = 524288;
 
-export function runBartcode(code, onOutputUpdate, onRamUpdate) {
+export function runBartcode(code, onOutputUpdate, onRamUpdate, onComplete) {
   if (!code || typeof code !== 'string') {
     onOutputUpdate('ready...\n');
-    return;
+    if (onComplete) onComplete();
+    return { stop: () => {} };
   }
 
+  let stopped = false;
   let lines = code.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
   // Pre-scan for function definitions
@@ -57,7 +59,7 @@ export function runBartcode(code, onOutputUpdate, onRamUpdate) {
     ramError: null
   };
 
-  const CONTROL_KEYWORDS = ['IF', 'ELSE', 'ENDIF', 'REPEAT', 'ENDREPEAT', 'WHILE', 'ENDWHILE'];
+  const CONTROL_KEYWORDS = ['IF', 'ELSEIF', 'ELSE', 'ENDIF', 'SWITCH', 'CASE', 'DEFAULT', 'ENDSWITCH', 'REPEAT', 'ENDREPEAT', 'WHILE', 'ENDWHILE'];
 
   function renderGrid() {
     return context.grid.map(row => row.join('')).join('\n');
@@ -68,13 +70,17 @@ export function runBartcode(code, onOutputUpdate, onRamUpdate) {
   }
 
   function step() {
+    if (stopped) return;
+
     if (context.ramError) {
       onOutputUpdate('ERR: ' + context.ramError);
+      if (onComplete) onComplete();
       return;
     }
 
     if (context.pc >= context.lines.length) {
       onOutputUpdate(renderGrid());
+      if (onComplete) onComplete();
       return;
     }
 
@@ -114,4 +120,6 @@ export function runBartcode(code, onOutputUpdate, onRamUpdate) {
   }
 
   setTimeout(step, 0);
+
+  return { stop: () => { stopped = true; if (onComplete) onComplete(); } };
 }

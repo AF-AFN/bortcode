@@ -15,15 +15,32 @@
   let ramUsed = 0;
   let ramTotal = 524288;
   let renderer = 'zelos';
+  let running = false;
+  let stopBartcode = null;
 
   function handleRun() {
+    if (running && stopBartcode) {
+      stopBartcode.stop();
+    }
     const code = bartcodeGenerator.workspaceToCode(workspace);
-    runBartcode(code, (newOutput) => {
+    running = true;
+    stopBartcode = runBartcode(code, (newOutput) => {
       consoleOutput = newOutput;
     }, (used, total) => {
       ramUsed = used;
       ramTotal = total;
+    }, () => {
+      running = false;
+      stopBartcode = null;
     });
+  }
+
+  function handleStop() {
+    if (stopBartcode) {
+      stopBartcode.stop();
+      stopBartcode = null;
+    }
+    running = false;
   }
 
   function handleRendererChange(e) {
@@ -69,6 +86,7 @@
       </select>
     </label>
     <button on:click={handleRun}>Run code</button>
+    <button class="stop-btn" on:click={handleStop} disabled={!running}>Stop code</button>
   </div>
 </nav>
 

@@ -75,19 +75,6 @@ Blockly.Blocks['bart_move'] = {
   }
 };
 
-// focus
-Blockly.Blocks['bart_focus'] = {
-  init: function() {
-    this.appendDummyInput()
-        .appendField('focus screen');
-    this.setPreviousStatement(true, null);
-    this.setNextStatement(true, null);
-    this.setColour(160);
-    this.setTooltip('Focuses the screen for input.');
-    this.setHelpUrl('');
-  }
-};
-
 /* CONTROL */
 
 // wait [n] secs
@@ -141,7 +128,7 @@ Blockly.Blocks['bart_while'] = {
   }
 };
 
-// if/else
+// if/else - mutator based
 Blockly.Blocks['bart_if_else'] = {
   init: function() {
     this.appendDummyInput()
@@ -150,42 +137,69 @@ Blockly.Blocks['bart_if_else'] = {
         .setCheck('Boolean');
     this.appendStatementInput('DO')
         .appendField('do');
-    this.appendDummyInput('CONFIG')
-        .appendField('mode:')
-        .appendField(new Blockly.FieldDropdown([
-          ['if', 'IF'],
-          ['if-else', 'IF_ELSE'],
-          ['if-elseif-else', 'IF_ELSEIF_ELSE']
-        ]), 'MODE');
-    this.appendDummyInput('ELSEIF_COUNT_INPUT')
-        .appendField('elseif count:')
-        .appendField(new Blockly.FieldTextInput('0', Blockly.FieldTextInput.numberValidator), 'ELSEIF_COUNT');
-    this.appendStatementInput('ELSE')
-        .appendField('else');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(120);
-    this.setTooltip('If/else conditional statement. Use mode dropdown to configure.');
+    this.setTooltip('If/else conditional statement. Use mutator to add elseif/else clauses.');
     this.setHelpUrl('');
     this.elseifCount_ = 0;
+    this.hasElse_ = false;
+    this.setMutator(new Blockly.icons.MutatorIcon(['bart_if_elseif_clause', 'bart_if_else_clause'], this));
+  },
+  mutationToDom: function() {
+    let container = document.createElement('mutation');
+    container.setAttribute('elseif_count', this.elseifCount_);
+    container.setAttribute('has_else', this.hasElse_ ? 'true' : 'false');
+    return container;
+  },
+  domToMutation: function(xmlElement) {
+    this.elseifCount_ = parseInt(xmlElement.getAttribute('elseif_count'), 10) || 0;
+    this.hasElse_ = xmlElement.getAttribute('has_else') === 'true';
     this.updateShape();
   },
-  onchange: function(event) {
-    if (event.type === Blockly.Events.BLOCK_CHANGE) {
-      if (event.name === 'MODE' || event.name === 'ELSEIF_COUNT') {
-        this.updateShape();
-      }
+  decompose: function(workspace) {
+    let containerBlock = workspace.newBlock('bart_if_container');
+    containerBlock.initSvg();
+
+    let connection = containerBlock.getInput('STACK').connection;
+
+    for (let i = 1; i <= this.elseifCount_; i++) {
+      let elseifBlock = workspace.newBlock('bart_if_elseif_clause');
+      elseifBlock.initSvg();
+      connection.connect(elseifBlock.previousConnection);
+      connection = elseifBlock.nextConnection;
     }
+
+    if (this.hasElse_) {
+      let elseBlock = workspace.newBlock('bart_if_else_clause');
+      elseBlock.initSvg();
+      connection.connect(elseBlock.previousConnection);
+    }
+
+    return containerBlock;
+  },
+  compose: function(containerBlock) {
+    let clauseBlock = containerBlock.getInputTargetBlock('STACK');
+
+    let count = 0;
+    let hasElse = false;
+
+    while (clauseBlock) {
+      if (clauseBlock.type === 'bart_if_elseif_clause') {
+        count++;
+      } else if (clauseBlock.type === 'bart_if_else_clause') {
+        hasElse = true;
+      }
+      clauseBlock = clauseBlock.nextConnection && clauseBlock.nextConnection.targetBlock();
+    }
+
+    this.elseifCount_ = count;
+    this.hasElse_ = hasElse;
+    this.updateShape();
   },
   updateShape: function() {
-    let mode = this.getFieldValue('MODE');
-    let elseifCount = parseInt(this.getFieldValue('ELSEIF_COUNT'), 10) || 0;
-    if (elseifCount < 0) elseifCount = 0;
-    if (elseifCount > 10) elseifCount = 10;
-    
-    // Handle elseif inputs
-    for (let i = 1; i <= this.elseifCount_; i++) {
+    for (let i = 1; i <= Math.max(this.elseifCount_, 10); i++) {
       if (this.getInput('ELSEIF' + i)) {
         this.removeInput('ELSEIF' + i);
       }
@@ -193,76 +207,151 @@ Blockly.Blocks['bart_if_else'] = {
         this.removeInput('DO' + i);
       }
     }
-    
-    for (let i = 1; i <= elseifCount; i++) {
+
+    for (let i = 1; i <= this.elseifCount_; i++) {
       this.appendValueInput('ELSEIF' + i)
           .setCheck('Boolean')
-          .appendField('elseif ' + i);
+          .appendField('elseif');
       this.appendStatementInput('DO' + i)
           .appendField('do');
     }
-    
-    this.elseifCount_ = elseifCount;
-    
-    // Handle else input based on mode
-    if (mode === 'IF') {
-      if (this.getInput('ELSE')) {
-        this.removeInput('ELSE');
-      }
-    } else {
+
+    if (this.hasElse_) {
       if (!this.getInput('ELSE')) {
         this.appendStatementInput('ELSE')
             .appendField('else');
       }
-    }
-    
-    // Show/hide elseif count input based on mode
-    if (mode === 'IF_ELSEIF_ELSE') {
-      if (!this.getInput('ELSEIF_COUNT_INPUT')) {
-        this.appendDummyInput('ELSEIF_COUNT_INPUT')
-            .appendField('elseif count:')
-            .appendField(new Blockly.FieldTextInput('0', Blockly.FieldTextInput.numberValidator), 'ELSEIF_COUNT');
-      }
     } else {
-      if (this.getInput('ELSEIF_COUNT_INPUT')) {
-        this.removeInput('ELSEIF_COUNT_INPUT');
+      if (this.getInput('ELSE')) {
+        this.removeInput('ELSE');
       }
     }
   }
 };
 
-// switch/case
+// Mutator container for if/else
+Blockly.Blocks['bart_if_container'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('if container');
+    this.appendStatementInput('STACK');
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+Blockly.Blocks['bart_if_elseif_clause'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('else if');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+Blockly.Blocks['bart_if_else_clause'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('else');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(false, null);
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+// switch/case - mutator based
 Blockly.Blocks['bart_switch_case'] = {
   init: function() {
     this.appendValueInput('VALUE')
         .appendField('switch');
-    this.appendStatementInput('CASES')
-        .appendField('cases');
-    this.appendDummyInput('CONFIG')
-        .appendField('has default:')
-        .appendField(new Blockly.FieldDropdown([
-          ['yes', 'YES'],
-          ['no', 'NO']
-        ]), 'HAS_DEFAULT');
-    this.appendStatementInput('DEFAULT')
-        .appendField('default');
     this.setInputsInline(true);
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(120);
-    this.setTooltip('Switch/case statement. Use dropdown to show/hide default.');
+    this.setTooltip('Switch/case statement. Use mutator to add case clauses.');
     this.setHelpUrl('');
+    this.caseCount_ = 0;
+    this.hasDefault_ = false;
+    this.setMutator(new Blockly.icons.MutatorIcon(['bart_switch_case_clause', 'bart_switch_default_clause'], this));
+  },
+  mutationToDom: function() {
+    let container = document.createElement('mutation');
+    container.setAttribute('case_count', this.caseCount_);
+    container.setAttribute('has_default', this.hasDefault_ ? 'true' : 'false');
+    return container;
+  },
+  domToMutation: function(xmlElement) {
+    this.caseCount_ = parseInt(xmlElement.getAttribute('case_count'), 10) || 0;
+    this.hasDefault_ = xmlElement.getAttribute('has_default') === 'true';
     this.updateShape();
   },
-  onchange: function(event) {
-    if (event.type === Blockly.Events.BLOCK_CHANGE && event.name === 'HAS_DEFAULT') {
-      this.updateShape();
+  decompose: function(workspace) {
+    let containerBlock = workspace.newBlock('bart_switch_container');
+    containerBlock.initSvg();
+
+    let connection = containerBlock.getInput('STACK').connection;
+
+    for (let i = 1; i <= this.caseCount_; i++) {
+      let caseBlock = workspace.newBlock('bart_switch_case_clause');
+      caseBlock.initSvg();
+      connection.connect(caseBlock.previousConnection);
+      connection = caseBlock.nextConnection;
     }
+
+    if (this.hasDefault_) {
+      let defaultBlock = workspace.newBlock('bart_switch_default_clause');
+      defaultBlock.initSvg();
+      connection.connect(defaultBlock.previousConnection);
+    }
+
+    return containerBlock;
+  },
+  compose: function(containerBlock) {
+    let clauseBlock = containerBlock.getInputTargetBlock('STACK');
+
+    let count = 0;
+    let hasDefault = false;
+
+    while (clauseBlock) {
+      if (clauseBlock.type === 'bart_switch_case_clause') {
+        count++;
+      } else if (clauseBlock.type === 'bart_switch_default_clause') {
+        hasDefault = true;
+      }
+      clauseBlock = clauseBlock.nextConnection && clauseBlock.nextConnection.targetBlock();
+    }
+
+    this.caseCount_ = count;
+    this.hasDefault_ = hasDefault;
+    this.updateShape();
   },
   updateShape: function() {
-    let hasDefault = this.getFieldValue('HAS_DEFAULT') === 'YES';
-    
-    if (hasDefault) {
+    for (let i = 1; i <= Math.max(this.caseCount_, 10); i++) {
+      if (this.getInput('CASE' + i)) {
+        this.removeInput('CASE' + i);
+      }
+      if (this.getInput('DO' + i)) {
+        this.removeInput('DO' + i);
+      }
+    }
+
+    for (let i = 1; i <= this.caseCount_; i++) {
+      this.appendValueInput('CASE' + i)
+          .appendField('case');
+      this.appendStatementInput('DO' + i)
+          .appendField('do');
+    }
+
+    if (this.hasDefault_) {
       if (!this.getInput('DEFAULT')) {
         this.appendStatementInput('DEFAULT')
             .appendField('default');
@@ -272,6 +361,61 @@ Blockly.Blocks['bart_switch_case'] = {
         this.removeInput('DEFAULT');
       }
     }
+  }
+};
+
+// Mutator container for switch/case
+Blockly.Blocks['bart_switch_container'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('switch container');
+    this.appendStatementInput('STACK');
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+Blockly.Blocks['bart_switch_case_clause'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('case');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+Blockly.Blocks['bart_switch_default_clause'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('default');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(false, null);
+    this.setColour(120);
+    this.setTooltip('');
+    this.setHelpUrl('');
+    this.contextMenu = false;
+  }
+};
+
+// case block for use inside switch body
+Blockly.Blocks['bart_case'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('case');
+    this.appendStatementInput('DO')
+        .appendField('do');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('A case clause for a switch statement.');
+    this.setHelpUrl('');
   }
 };
 
@@ -306,6 +450,47 @@ Blockly.Blocks['bart_join'] = {
     this.setOutput(true, 'String');
     this.setColour(160);
     this.setTooltip('Joins two strings together.');
+    this.setHelpUrl('');
+  }
+};
+
+/* TYPE CONVERSIONS */
+
+// to number
+Blockly.Blocks['bart_to_number'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('to number');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(160);
+    this.setTooltip('Converts a value to a number.');
+    this.setHelpUrl('');
+  }
+};
+
+// to string
+Blockly.Blocks['bart_to_string'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('to string');
+    this.setInputsInline(true);
+    this.setOutput(true, 'String');
+    this.setColour(160);
+    this.setTooltip('Converts a value to a string.');
+    this.setHelpUrl('');
+  }
+};
+
+// to boolean
+Blockly.Blocks['bart_to_boolean'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('to boolean');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(160);
+    this.setTooltip('Converts a value to a boolean.');
     this.setHelpUrl('');
   }
 };

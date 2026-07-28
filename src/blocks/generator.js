@@ -40,20 +40,17 @@ bartcodeGenerator.forBlock['bart_move'] = function(block, generator) {
 bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
   let condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_NONE) || 'true';
   let doCode = generator.statementToCode(block, 'DO') || '';
-  let mode = block.getFieldValue('MODE');
   let elseifCount = block.elseifCount_ || 0;
 
   let code = 'IF ' + condition + '\n' + doCode;
 
-  // Handle elseif blocks
   for (let i = 1; i <= elseifCount; i++) {
     let elseifCondition = generator.valueToCode(block, 'ELSEIF' + i, generator.ORDER_NONE) || 'true';
     let elseifDo = generator.statementToCode(block, 'DO' + i) || '';
     code += 'ELSEIF ' + elseifCondition + '\n' + elseifDo;
   }
 
-  // Handle else block based on mode
-  if (mode !== 'IF') {
+  if (block.hasElse_) {
     let elseCode = generator.statementToCode(block, 'ELSE') || '';
     code += 'ELSE\n' + elseCode;
   }
@@ -64,9 +61,16 @@ bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
 
 bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
   let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
-  let cases = generator.statementToCode(block, 'CASES') || '';
-  let hasDefault = block.getFieldValue('HAS_DEFAULT') === 'YES';
-  let code = 'SWITCH ' + value + '\n' + cases;
+  let caseCount = block.caseCount_ || 0;
+  let hasDefault = block.hasDefault_;
+
+  let code = 'SWITCH ' + value + '\n';
+
+  for (let i = 1; i <= caseCount; i++) {
+    let caseValue = generator.valueToCode(block, 'CASE' + i, generator.ORDER_NONE) || '0';
+    let caseDo = generator.statementToCode(block, 'DO' + i) || '';
+    code += 'CASE ' + caseValue + '\n' + caseDo;
+  }
 
   if (hasDefault) {
     let defaultCode = generator.statementToCode(block, 'DEFAULT') || '';
@@ -75,6 +79,12 @@ bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
 
   code += 'ENDSWITCH\n';
   return code;
+};
+
+bartcodeGenerator.forBlock['bart_case'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
+  let doCode = generator.statementToCode(block, 'DO') || '';
+  return 'CASE ' + value + '\n' + doCode;
 };
 
 bartcodeGenerator.forBlock['bart_repeat'] = function(block, generator) {
@@ -125,6 +135,21 @@ bartcodeGenerator.forBlock['bart_divide'] = function(block, generator) {
   let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
   let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '1';
   return ['DIV(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_to_number'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
+  return ['TO_NUMBER(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_to_string'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '""';
+  return ['TO_STRING(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_to_boolean'] = function(block, generator) {
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || 'true';
+  return ['TO_BOOLEAN(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.forBlock['bart_join'] = function(block, generator) {

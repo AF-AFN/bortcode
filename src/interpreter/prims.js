@@ -74,6 +74,20 @@ export function primDefault(arg, context) {
   }
 }
 
+export function primCase(arg, context) {
+  let value = evaluateExpression(arg, context);
+  context.controlStack = context.controlStack || [];
+  let top = context.controlStack[context.controlStack.length - 1];
+  if (top && top.type === 'SWITCH') {
+    let conditionResult = value === top.value;
+    let shouldSkip = top.matched || !conditionResult;
+    top.skip = shouldSkip;
+    if (conditionResult) {
+      top.matched = true;
+    }
+  }
+}
+
 export function primEndswitch(arg, context) {
   context.controlStack = context.controlStack || [];
   context.controlStack.pop();
@@ -348,6 +362,27 @@ function evaluateExpression(expr, context) {
     }
 
     return returnValue;
+  }
+
+  // TO_NUMBER
+  if (expr.startsWith('TO_NUMBER(') && expr.endsWith(')')) {
+    let inner = expr.substring(10, expr.length - 1);
+    let val = evaluateExpression(inner, context);
+    return parseFloat(val).toString();
+  }
+
+  // TO_STRING
+  if (expr.startsWith('TO_STRING(') && expr.endsWith(')')) {
+    let inner = expr.substring(10, expr.length - 1);
+    let val = evaluateExpression(inner, context);
+    return String(val);
+  }
+
+  // TO_BOOLEAN
+  if (expr.startsWith('TO_BOOLEAN(') && expr.endsWith(')')) {
+    let inner = expr.substring(11, expr.length - 1);
+    let val = evaluateExpression(inner, context);
+    return (val === 'true' || val === true).toString();
   }
 
   if ((expr.startsWith('"') && expr.endsWith('"')) || 

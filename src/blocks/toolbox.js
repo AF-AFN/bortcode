@@ -2,12 +2,12 @@ export const toolboxXML = `
 <xml id="toolbox" style="display: none">
   <category name="Events" colour="290">
     <block type="bart_on_run"></block>
+    <block type="bart_key_pressed"></block>
   </category>
   <category name="Screen" colour="160">
     <block type="bart_put"></block>
     <block type="bart_clear"></block>
     <block type="bart_move"></block>
-    <block type="bart_focus"></block>
   </category>
   <category name="Control" colour="120">
     <block type="bart_wait">
@@ -22,12 +22,12 @@ export const toolboxXML = `
     <block type="bart_if_else"></block>
     <block type="bart_switch_case"></block>
   </category>
-  <category name="Sensing" colour="290">
-    <block type="bart_key_pressed"></block>
-  </category>
   <category name="Strings" colour="160">
     <block type="bart_string"></block>
     <block type="bart_join"></block>
+    <block type="bart_to_number"></block>
+    <block type="bart_to_string"></block>
+    <block type="bart_to_boolean"></block>
   </category>
   <category name="Numbers" colour="230">
     <block type="bart_number"></block>
