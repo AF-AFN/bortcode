@@ -1,232 +1,276 @@
 import * as Blockly from 'blockly';
-import './bartcode_blocks.js';
 
-export const bartcodeGenerator = new Blockly.CodeGenerator('Bartcode');
+/* events */
 
-bartcodeGenerator.ORDER_ATOMIC = 0;
-bartcodeGenerator.ORDER_NONE = 99;
-
-/* EVENTS */
-
-bartcodeGenerator.forBlock['bart_on_run'] = function(block, generator) {
-  return '';
+Blockly.Blocks['bart_on_run'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('When run');
+    this.setPreviousStatement(false, null);
+    this.setNextStatement(true, null);
+    this.setColour(290);
+    this.setTooltip('Runs the attached blocks when the run button is clicked. Blocks not connected to this event will not run.');
+    this.setHelpUrl('');
+    this.hat = 'cap';
+  }
 };
 
 /* COMMANDS */
 
-bartcodeGenerator.forBlock['bart_put'] = function(block, generator) {
-  let textCode = generator.valueToCode(block, 'TEXT', generator.ORDER_NONE) || '""';
-  return 'PRINT ' + textCode + '\n';
-};
+/* SCREEN */
 
-bartcodeGenerator.forBlock['bart_clear'] = function(block, generator) {
-  return 'CLEAR\n';
-};
-
-bartcodeGenerator.forBlock['bart_wait'] = function(block, generator) {
-  let timeVal = generator.valueToCode(block, 'SECONDS', generator.ORDER_NONE) || '1';
-  return 'WAIT ' + timeVal + '\n';
-};
-
-bartcodeGenerator.forBlock['bart_move'] = function(block, generator) {
-  let fromCol = generator.valueToCode(block, 'FROM_COL', generator.ORDER_NONE) || '0';
-  let fromRow = generator.valueToCode(block, 'FROM_ROW', generator.ORDER_NONE) || '0';
-  let toCol = generator.valueToCode(block, 'TO_COL', generator.ORDER_NONE) || '0';
-  let toRow = generator.valueToCode(block, 'TO_ROW', generator.ORDER_NONE) || '0';
-
-  return 'MOVE(' + fromCol + ', ' + fromRow + ', ' + toCol + ', ' + toRow + ')\n';
-};
-
-bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
-  let condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_NONE) || 'true';
-  let doCode = generator.statementToCode(block, 'DO') || '';
-  let mode = block.getFieldValue('MODE');
-  let elseifCount = block.elseifCount_ || 0;
-
-  let code = 'IF ' + condition + '\n' + doCode;
-
-  // Handle elseif blocks
-  for (let i = 1; i <= elseifCount; i++) {
-    let elseifCondition = generator.valueToCode(block, 'ELSEIF' + i, generator.ORDER_NONE) || 'true';
-    let elseifDo = generator.statementToCode(block, 'DO' + i) || '';
-    code += 'ELSEIF ' + elseifCondition + '\n' + elseifDo;
+// put
+Blockly.Blocks['bart_put'] = {
+  init: function() {
+    this.appendValueInput('TEXT')
+        .setCheck('String')
+        .appendField('put');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip('Prints text to the screen.');
+    this.setHelpUrl('');
   }
+};
 
-  // Handle else block based on mode
-  if (mode !== 'IF') {
-    let elseCode = generator.statementToCode(block, 'ELSE') || '';
-    code += 'ELSE\n' + elseCode;
+// clear
+Blockly.Blocks['bart_clear'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('clear console');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip('Clears the screen.');
+    this.setHelpUrl('');
   }
-
-  code += 'ENDIF\n';
-  return code;
 };
 
-bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
-  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
-  let cases = generator.statementToCode(block, 'CASES') || '';
-  let hasDefault = block.getFieldValue('HAS_DEFAULT') === 'YES';
-  let code = 'SWITCH ' + value + '\n' + cases;
-
-  if (hasDefault) {
-    let defaultCode = generator.statementToCode(block, 'DEFAULT') || '';
-    code += 'DEFAULT\n' + defaultCode;
+// move cursor
+Blockly.Blocks['bart_move'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('move c:');
+    this.appendValueInput('FROM_COL')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('r:');
+    this.appendValueInput('FROM_ROW')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('to c:');
+    this.appendValueInput('TO_COL')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('r:');
+    this.appendValueInput('TO_ROW')
+        .setCheck('Number');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip('Moves cursor from one position to another.');
+    this.setHelpUrl('');
   }
-
-  code += 'ENDSWITCH\n';
-  return code;
 };
 
-bartcodeGenerator.forBlock['bart_repeat'] = function(block, generator) {
-  var value_times = generator.valueToCode(block, 'TIMES', generator.ORDER_ATOMIC) || '0';
-  var statements_do = generator.statementToCode(block, 'DO');
-
-  return `REPEAT (${value_times})\n${statements_do}ENDREPEAT\n`;
+// focus
+Blockly.Blocks['bart_focus'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('focus screen');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(160);
+    this.setTooltip('Focuses the screen for input.');
+    this.setHelpUrl('');
+  }
 };
 
-bartcodeGenerator.forBlock['bart_while'] = function(block, generator) {
-  var value_condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_ATOMIC) || 'false';
-  var statements_do = generator.statementToCode(block, 'DO');
+/* CONTROL */
 
-  return `WHILE (${value_condition})\n${statements_do}ENDWHILE\n`;
+// wait [n] secs
+Blockly.Blocks['bart_wait'] = {
+  init: function() {
+    this.appendValueInput('SECONDS')
+        .setCheck('Number')
+        .appendField('wait');
+    this.appendDummyInput()
+        .appendField('secs');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Pauses execution for a specified number of seconds.');
+    this.setHelpUrl('');
+  }
 };
 
-/* ARGUMENTS */
-
-bartcodeGenerator.forBlock['bart_string'] = function(block, generator) {
-  let textValue = block.getFieldValue('VALUE');
-  return ['"' + textValue + '"', bartcodeGenerator.ORDER_ATOMIC];
+// repeat times
+Blockly.Blocks['bart_repeat'] = {
+  init: function() {
+    this.appendValueInput('TIMES')
+        .setCheck('Number')
+        .appendField('repeat');
+    this.appendStatementInput('DO')
+        .appendField('times');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Repeats the contained blocks a specified number of times.');
+    this.setHelpUrl('');
+  }
 };
 
-bartcodeGenerator.forBlock['bart_number'] = function(block, generator) {
-  let numValue = block.getFieldValue('VALUE');
-  return [numValue, bartcodeGenerator.ORDER_ATOMIC];
+// while do
+Blockly.Blocks['bart_while'] = {
+  init: function() {
+    this.appendValueInput('CONDITION')
+        .setCheck('Boolean')
+        .appendField('while');
+    this.appendStatementInput('DO')
+        .appendField('do');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Repeats the contained blocks while the condition is true.');
+    this.setHelpUrl('');
+  }
 };
 
-bartcodeGenerator.forBlock['bart_add'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
-  return ['ADD(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_subtract'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
-  return ['SUB(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_multiply'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
-  return ['MUL(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_divide'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '1';
-  return ['DIV(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_join'] = function(block, generator) {
-  let str1 = generator.valueToCode(block, 'STR1', generator.ORDER_NONE) || '""';
-  let str2 = generator.valueToCode(block, 'STR2', generator.ORDER_NONE) || '""';
-  return ['JOIN(' + str1 + ', ' + str2 + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_logic_op'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || 'true';
-  let op = block.getFieldValue('OP');
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || 'true';
-  return [op + '(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_not'] = function(block, generator) {
-  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || 'true';
-  return ['NOT(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_equals'] = function(block, generator) {
-  let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
-  let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
-  return ['EQ(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_key_pressed'] = function(block, generator) {
-  let key = block.getFieldValue('KEY');
-  return ['KEYPRESSED("' + key + '")', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_true'] = function(block, generator) {
-  return ['true', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_false'] = function(block, generator) {
-  return ['false', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_flush_ram'] = function(block, generator) {
-  return 'FLUSHRAM\n';
-};
-
-bartcodeGenerator.forBlock['bart_store'] = function(block, generator) {
-  let addr = generator.valueToCode(block, 'ADDR', generator.ORDER_ATOMIC) || '0';
-  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
-  return 'STORE(' + addr + ', ' + value + ')\n';
-};
-
-bartcodeGenerator.forBlock['bart_load'] = function(block, generator) {
-  let addr = generator.valueToCode(block, 'ADDR', generator.ORDER_ATOMIC) || '0';
-  return ['LOAD(' + addr + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
-  let nextBlock = block.nextConnection && block.nextConnection.targetBlock();
-  let nextCode = '';
-  if (nextBlock) {
-    if (!thisOnly) {
-      nextCode = bartcodeGenerator.blockToCode(nextBlock);
+// if/else
+Blockly.Blocks['bart_if_else'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('if');
+    this.appendValueInput('CONDITION')
+        .setCheck('Boolean');
+    this.appendStatementInput('DO')
+        .appendField('do');
+    this.appendDummyInput('CONFIG')
+        .appendField('mode:')
+        .appendField(new Blockly.FieldDropdown([
+          ['if', 'IF'],
+          ['if-else', 'IF_ELSE'],
+          ['if-elseif-else', 'IF_ELSEIF_ELSE']
+        ]), 'MODE');
+    this.appendDummyInput('ELSEIF_COUNT_INPUT')
+        .appendField('elseif count:')
+        .appendField(new Blockly.FieldTextInput('0', Blockly.FieldTextInput.numberValidator), 'ELSEIF_COUNT');
+    this.appendStatementInput('ELSE')
+        .appendField('else');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('If/else conditional statement. Use mode dropdown to configure.');
+    this.setHelpUrl('');
+    this.elseifCount_ = 0;
+    this.updateShape();
+  },
+  onchange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE) {
+      if (event.name === 'MODE' || event.name === 'ELSEIF_COUNT') {
+        this.updateShape();
+      }
+    }
+  },
+  updateShape: function() {
+    let mode = this.getFieldValue('MODE');
+    let elseifCount = parseInt(this.getFieldValue('ELSEIF_COUNT'), 10) || 0;
+    if (elseifCount < 0) elseifCount = 0;
+    if (elseifCount > 10) elseifCount = 10;
+    
+    // Handle elseif inputs
+    for (let i = 1; i <= this.elseifCount_; i++) {
+      if (this.getInput('ELSEIF' + i)) {
+        this.removeInput('ELSEIF' + i);
+      }
+      if (this.getInput('DO' + i)) {
+        this.removeInput('DO' + i);
+      }
+    }
+    
+    for (let i = 1; i <= elseifCount; i++) {
+      this.appendValueInput('ELSEIF' + i)
+          .setCheck('Boolean')
+          .appendField('elseif ' + i);
+      this.appendStatementInput('DO' + i)
+          .appendField('do');
+    }
+    
+    this.elseifCount_ = elseifCount;
+    
+    // Handle else input based on mode
+    if (mode === 'IF') {
+      if (this.getInput('ELSE')) {
+        this.removeInput('ELSE');
+      }
+    } else {
+      if (!this.getInput('ELSE')) {
+        this.appendStatementInput('ELSE')
+            .appendField('else');
+      }
+    }
+    
+    // Show/hide elseif count input based on mode
+    if (mode === 'IF_ELSEIF_ELSE') {
+      if (!this.getInput('ELSEIF_COUNT_INPUT')) {
+        this.appendDummyInput('ELSEIF_COUNT_INPUT')
+            .appendField('elseif count:')
+            .appendField(new Blockly.FieldTextInput('0', Blockly.FieldTextInput.numberValidator), 'ELSEIF_COUNT');
+      }
+    } else {
+      if (this.getInput('ELSEIF_COUNT_INPUT')) {
+        this.removeInput('ELSEIF_COUNT_INPUT');
+      }
     }
   }
-  return code + nextCode;
 };
 
- 
-bartcodeGenerator.workspaceToCode = function(workspace) {
-  if (!workspace) {
-    console.warn('No workspace specified in workspaceToCode call.');
-    workspace = Blockly.getMainWorkspace();
+// switch/case
+Blockly.Blocks['bart_switch_case'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('switch');
+    this.appendStatementInput('CASES')
+        .appendField('cases');
+    this.appendDummyInput('CONFIG')
+        .appendField('has default:')
+        .appendField(new Blockly.FieldDropdown([
+          ['yes', 'YES'],
+          ['no', 'NO']
+        ]), 'HAS_DEFAULT');
+    this.appendStatementInput('DEFAULT')
+        .appendField('default');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(120);
+    this.setTooltip('Switch/case statement. Use dropdown to show/hide default.');
+    this.setHelpUrl('');
+    this.updateShape();
+  },
+  onchange: function(event) {
+    if (event.type === Blockly.Events.BLOCK_CHANGE && event.name === 'HAS_DEFAULT') {
+      this.updateShape();
+    }
+  },
+  updateShape: function() {
+    let hasDefault = this.getFieldValue('HAS_DEFAULT') === 'YES';
+    
+    if (hasDefault) {
+      if (!this.getInput('DEFAULT')) {
+        this.appendStatementInput('DEFAULT')
+            .appendField('default');
+      }
+    } else {
+      if (this.getInput('DEFAULT')) {
+        this.removeInput('DEFAULT');
+      }
+    }
   }
-
-  const codeLines = [];
-  this.init(workspace);
-
-  const topBlocks = workspace.getTopBlocks(true);
-  for (let i = 0; i < topBlocks.length; i++) {
-    const block = topBlocks[i];
-
-    if (block.type !== 'bart_on_run') {
-      continue;
-    }
-
-    if (typeof block.isEnabled === 'function' && !block.isEnabled()) {
-      continue;
-    }
-
-    let line = this.blockToCode(block);
-    if (Array.isArray(line)) {
-      line = line[0];
-    }
-    if (line) {
-      codeLines.push(line);
-    }
-  }
-
-  let code = codeLines.join('\n');
-  code = this.finish(code);
-
-  code = code.replace(/^\s+\n/, '');
-  code = code.replace(/\n\s+$/, '\n');
-  code = code.replace(/[ \t]+\n/g, '\n');
-
-  return code;
 };
