@@ -1,4 +1,4 @@
-import { isKeyPressed } from '../keyboard.js';
+import { isKeyPressed, getLastKey, isAnyKeyPressed } from '../keyboard.js';
 import { primitiveSpecs } from './specs.js';
 
 export function primPut(arg, context) {
@@ -306,6 +306,42 @@ function evaluateExpression(expr, context) {
     return (!val).toString();
   }
   
+  // LEN
+  if (expr.startsWith('LEN(') && expr.endsWith(')')) {
+    let inner = expr.substring(4, expr.length - 1);
+    let str = evaluateExpression(inner.trim(), context);
+    return str.length.toString();
+  }
+
+  // CHARAT
+  if (expr.startsWith('CHARAT(') && expr.endsWith(')')) {
+    let inner = expr.substring(7, expr.length - 1);
+    let splitIndex = findCommaSplitIndex(inner);
+    let strExpr = inner.substring(0, splitIndex).trim();
+    let idxExpr = inner.substring(splitIndex + 1).trim();
+    let str = evaluateExpression(strExpr, context);
+    let idx = parseInt(evaluateExpression(idxExpr, context), 10);
+    if (isNaN(idx) || idx < 0 || idx >= str.length) return '';
+    return str[idx];
+  }
+
+  // SUBSTR
+  if (expr.startsWith('SUBSTR(') && expr.endsWith(')')) {
+    let inner = expr.substring(7, expr.length - 1);
+    let parts = splitByCommaOutsideQuotes(inner);
+    if (parts.length < 3) return '';
+    let strExpr = parts[0].trim();
+    let startExpr = parts[1].trim();
+    let lenExpr = parts[2].trim();
+    let str = evaluateExpression(strExpr, context);
+    let start = parseInt(evaluateExpression(startExpr, context), 10);
+    let len = parseInt(evaluateExpression(lenExpr, context), 10);
+    if (isNaN(start) || start < 0) start = 0;
+    if (isNaN(len) || len < 0) return '';
+    if (start >= str.length || len === 0) return '';
+    return str.substring(start, start + len);
+  }
+
   if (expr.startsWith('JOIN(') && expr.endsWith(')')) {
     let inner = expr.substring(5, expr.length - 1);
     let splitIndex = findCommaSplitIndex(inner);
@@ -319,6 +355,16 @@ function evaluateExpression(expr, context) {
     let inner = expr.substring(11, expr.length - 1);
     let key = evaluateExpression(inner, context);
     return isKeyPressed(key) ? 'true' : 'false';
+  }
+
+  // LASTKEY
+  if (expr === 'LASTKEY') {
+    return getLastKey();
+  }
+
+  // ANYKEY
+  if (expr === 'ANYKEY') {
+    return isAnyKeyPressed() ? 'true' : 'false';
   }
 
   // LOAD

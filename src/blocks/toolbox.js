@@ -3,6 +3,8 @@ export const toolboxXML = `
   <category name="Events" colour="290">
     <block type="bart_on_run"></block>
     <block type="bart_key_pressed"></block>
+    <block type="bart_last_key"></block>
+    <block type="bart_any_key"></block>
   </category>
   <category name="Screen" colour="160">
     <block type="bart_put"></block>
@@ -30,6 +32,9 @@ export const toolboxXML = `
   <category name="Strings" colour="160">
     <block type="bart_string"></block>
     <block type="bart_join"></block>
+    <block type="bart_char_at"></block>
+    <block type="bart_len"></block>
+    <block type="bart_substr"></block>
   </category>
   <category name="Numbers" colour="230">
     <block type="bart_number"></block>

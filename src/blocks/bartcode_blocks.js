@@ -458,6 +458,57 @@ Blockly.Blocks['bart_string'] = {
   }
 };
 
+// length of string
+Blockly.Blocks['bart_len'] = {
+  init: function() {
+    this.appendValueInput('STR')
+        .setCheck('String')
+        .appendField('length');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(160);
+    this.setTooltip('Returns the length of a string.');
+    this.setHelpUrl('');
+  }
+};
+
+// char at
+Blockly.Blocks['bart_char_at'] = {
+  init: function() {
+    this.appendValueInput('STR')
+        .setCheck('String')
+        .appendField('char at');
+    this.appendValueInput('INDEX')
+        .setCheck('Number')
+        .appendField('index');
+    this.setInputsInline(true);
+    this.setOutput(true, 'String');
+    this.setColour(160);
+    this.setTooltip('Gets the character at the given index in a string (0-based).');
+    this.setHelpUrl('');
+  }
+};
+
+// substring
+Blockly.Blocks['bart_substr'] = {
+  init: function() {
+    this.appendValueInput('STR')
+        .setCheck('String')
+        .appendField('substr');
+    this.appendValueInput('START')
+        .setCheck('Number')
+        .appendField('start');
+    this.appendValueInput('LEN')
+        .setCheck('Number')
+        .appendField('len');
+    this.setInputsInline(true);
+    this.setOutput(true, 'String');
+    this.setColour(160);
+    this.setTooltip('Extracts a substring from start with given length.');
+    this.setHelpUrl('');
+  }
+};
+
 // join [str] [str]
 Blockly.Blocks['bart_join'] = {
   init: function() {
@@ -812,6 +863,28 @@ Blockly.Blocks['bart_key_pressed'] = {
     this.setOutput(true, 'Boolean');
     this.setColour(290);
     this.setTooltip('Returns true if the specified key is currently pressed.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_last_key'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('last key pressed');
+    this.setOutput(true, 'String');
+    this.setColour(290);
+    this.setTooltip('Returns the last key pressed as a string.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_any_key'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('any key pressed?');
+    this.setOutput(true, 'Boolean');
+    this.setColour(290);
+    this.setTooltip('Returns true if any key is currently pressed.');
     this.setHelpUrl('');
   }
 };

@@ -167,6 +167,24 @@ bartcodeGenerator.forBlock['bart_to_boolean'] = function(block, generator) {
   return ['TO_BOOLEAN(' + value + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
+bartcodeGenerator.forBlock['bart_len'] = function(block, generator) {
+  let str = generator.valueToCode(block, 'STR', generator.ORDER_NONE) || '""';
+  return ['LEN(' + str + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_char_at'] = function(block, generator) {
+  let str = generator.valueToCode(block, 'STR', generator.ORDER_NONE) || '""';
+  let idx = generator.valueToCode(block, 'INDEX', generator.ORDER_NONE) || '0';
+  return ['CHARAT(' + str + ', ' + idx + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_substr'] = function(block, generator) {
+  let str = generator.valueToCode(block, 'STR', generator.ORDER_NONE) || '""';
+  let start = generator.valueToCode(block, 'START', generator.ORDER_NONE) || '0';
+  let len = generator.valueToCode(block, 'LEN', generator.ORDER_NONE) || '0';
+  return ['SUBSTR(' + str + ', ' + start + ', ' + len + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
 bartcodeGenerator.forBlock['bart_join'] = function(block, generator) {
   let str1 = generator.valueToCode(block, 'STR1', generator.ORDER_NONE) || '""';
   let str2 = generator.valueToCode(block, 'STR2', generator.ORDER_NONE) || '""';
@@ -194,6 +212,14 @@ bartcodeGenerator.forBlock['bart_equals'] = function(block, generator) {
 bartcodeGenerator.forBlock['bart_key_pressed'] = function(block, generator) {
   let key = block.getFieldValue('KEY');
   return ['KEYPRESSED("' + key + '")', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_last_key'] = function(block, generator) {
+  return ['LASTKEY', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_any_key'] = function(block, generator) {
+  return ['ANYKEY', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.forBlock['bart_true'] = function(block, generator) {
