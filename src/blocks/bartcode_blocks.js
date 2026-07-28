@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly';
 
-/* events */
+/* CAPS */
 
 Blockly.Blocks['bart_on_run'] = {
   init: function() {
@@ -272,5 +272,395 @@ Blockly.Blocks['bart_switch_case'] = {
         this.removeInput('DEFAULT');
       }
     }
+  }
+};
+
+
+/* ARGUMENTS */
+
+/* STRINGS */
+
+// string
+Blockly.Blocks['bart_string'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('"')
+        .appendField(new Blockly.FieldTextInput('Hello World'), 'VALUE')
+        .appendField('"');
+    this.setOutput(true, 'String');
+    this.setColour(160);
+    this.setTooltip('A literal string.');
+    this.setHelpUrl('');
+  }
+};
+
+// join [str] [str]
+Blockly.Blocks['bart_join'] = {
+  init: function() {
+    this.appendValueInput('STR1')
+        .setCheck('String')
+        .appendField('join');
+    this.appendValueInput('STR2')
+        .setCheck('String');
+    this.setInputsInline(true);
+    this.setOutput(true, 'String');
+    this.setColour(160);
+    this.setTooltip('Joins two strings together.');
+    this.setHelpUrl('');
+  }
+};
+
+/* NUMBERS */
+
+// number
+Blockly.Blocks['bart_number'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldTextInput('1', Blockly.FieldTextInput.numberValidator), 'VALUE');
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('A literal number.');
+    this.setHelpUrl('');
+  }
+};
+
+// add
+Blockly.Blocks['bart_add'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('+');
+    this.appendValueInput('B')
+        .setCheck('Number');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Adds two numbers together.');
+    this.setHelpUrl('');
+  }
+};
+
+// subtract
+Blockly.Blocks['bart_subtract'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('-');
+    this.appendValueInput('B')
+        .setCheck('Number');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Subtracts two numbers.');
+    this.setHelpUrl('');
+  }
+};
+
+// multiply
+Blockly.Blocks['bart_multiply'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('*');
+    this.appendValueInput('B')
+        .setCheck('Number');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Multiplies two numbers.');
+    this.setHelpUrl('');
+  }
+};
+
+// divide
+Blockly.Blocks['bart_divide'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck('Number');
+    this.appendDummyInput()
+        .appendField('/');
+    this.appendValueInput('B')
+        .setCheck('Number');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Number');
+    this.setColour(230);
+    this.setTooltip('Divides two numbers.');
+    this.setHelpUrl('');
+  }
+};
+
+/* LOGIC */
+
+// logical operators dropdown
+Blockly.Blocks['bart_logic_op'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck('Boolean');
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldDropdown([
+          ['AND', 'AND'],
+          ['OR', 'OR'],
+          ['NOR', 'NOR'],
+          ['XAND', 'XAND'],
+          ['XOR', 'XOR'],
+          ['XNOR', 'XNOR']
+        ]), 'OP');
+    this.appendValueInput('B')
+        .setCheck('Boolean');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(210);
+    this.setTooltip('Logical operation between two boolean values.');
+    this.setHelpUrl('');
+  }
+};
+
+// NOT
+Blockly.Blocks['bart_not'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .setCheck('Boolean')
+        .appendField('NOT');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(210);
+    this.setTooltip('Logical NOT operation.');
+    this.setHelpUrl('');
+  }
+};
+
+// equals
+Blockly.Blocks['bart_equals'] = {
+  init: function() {
+    this.appendValueInput('A')
+        .setCheck(null);
+    this.appendDummyInput()
+        .appendField('=');
+    this.appendValueInput('B')
+        .setCheck(null);
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(210);
+    this.setTooltip('Checks if two values are equal.');
+    this.setHelpUrl('');
+  }
+};
+
+/* BOOLEAN LITERALS */
+
+// true
+Blockly.Blocks['bart_true'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('true');
+    this.setOutput(true, 'Boolean');
+    this.setColour(210);
+    this.setTooltip('Boolean true value.');
+    this.setHelpUrl('');
+  }
+};
+
+// false
+Blockly.Blocks['bart_false'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('false');
+    this.setOutput(true, 'Boolean');
+    this.setColour(210);
+    this.setTooltip('Boolean false value.');
+    this.setHelpUrl('');
+  }
+};
+
+/* MEMORY */
+
+// store
+Blockly.Blocks['bart_store'] = {
+  init: function() {
+    this.appendValueInput('ADDR')
+        .setCheck('Number')
+        .appendField('store at');
+    this.appendValueInput('VALUE')
+        .appendField('=');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(330);
+    this.setTooltip('Stores a value at memory address (0-511).');
+    this.setHelpUrl('');
+  }
+};
+
+// load
+Blockly.Blocks['bart_load'] = {
+  init: function() {
+    this.appendValueInput('ADDR')
+        .setCheck('Number')
+        .appendField('load');
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(330);
+    this.setTooltip('Loads a value from memory address (0-511).');
+    this.setHelpUrl('');
+  }
+};
+
+// flush ram
+Blockly.Blocks['bart_flush_ram'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('flush RAM');
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(330);
+    this.setTooltip('Resets all memory to empty.');
+    this.setHelpUrl('');
+  }
+};
+
+/* SENSING */
+
+// key pressed sensing
+const KEY_OPTIONS = [
+  ['space', ' '],
+  ['up arrow', 'ArrowUp'],
+  ['down arrow', 'ArrowDown'],
+  ['left arrow', 'ArrowLeft'],
+  ['right arrow', 'ArrowRight'],
+  ['shift', 'Shift'],
+  ['control', 'Control'],
+  ['alt', 'Alt'],
+  ['enter', 'Enter'],
+  ['escape', 'Escape'],
+  ['tab', 'Tab'],
+  ['backspace', 'Backspace'],
+  ['delete', 'Delete'],
+  ['home', 'Home'],
+  ['end', 'End'],
+  ['page up', 'PageUp'],
+  ['page down', 'PageDown'],
+  ['caps lock', 'CapsLock'],
+  ['a', 'a'],
+  ['b', 'b'],
+  ['c', 'c'],
+  ['d', 'd'],
+  ['e', 'e'],
+  ['f', 'f'],
+  ['g', 'g'],
+  ['h', 'h'],
+  ['i', 'i'],
+  ['j', 'j'],
+  ['k', 'k'],
+  ['l', 'l'],
+  ['m', 'm'],
+  ['n', 'n'],
+  ['o', 'o'],
+  ['p', 'p'],
+  ['q', 'q'],
+  ['r', 'r'],
+  ['s', 's'],
+  ['t', 't'],
+  ['u', 'u'],
+  ['v', 'v'],
+  ['w', 'w'],
+  ['x', 'x'],
+  ['y', 'y'],
+  ['z', 'z'],
+  ['0', '0'],
+  ['1', '1'],
+  ['2', '2'],
+  ['3', '3'],
+  ['4', '4'],
+  ['5', '5'],
+  ['6', '6'],
+  ['7', '7'],
+  ['8', '8'],
+  ['9', '9']
+];
+
+Blockly.Blocks['bart_key_pressed'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('key')
+        .appendField(new Blockly.FieldDropdown(KEY_OPTIONS), 'KEY')
+        .appendField('pressed?');
+    this.setOutput(true, 'Boolean');
+    this.setColour(290);
+    this.setTooltip('Returns true if the specified key is currently pressed.');
+    this.setHelpUrl('');
+  }
+};
+
+/* FUNCTIONS */
+
+Blockly.Blocks['bart_function'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('function')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.appendStatementInput('BODY')
+        .appendField('body');
+    this.setInputsInline(false);
+    this.setPreviousStatement(false, null);
+    this.setNextStatement(true, null);
+    this.setColour(20);
+    this.setTooltip('Defines a function that can be called by name.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_function'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(20);
+    this.setTooltip('Calls a function by name.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_boolean'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(20);
+    this.setTooltip('Calls a function and returns a boolean value.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_value'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(20);
+    this.setTooltip('Calls a function and returns a string or number value.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_return'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('return');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(false, null);
+    this.setColour(20);
+    this.setTooltip('Returns a value from a function.');
+    this.setHelpUrl('');
   }
 };
