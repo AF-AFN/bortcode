@@ -1,5 +1,8 @@
 export const toolboxXML = `
 <xml id="toolbox" style="display: none">
+  <category name="Events" colour="290">
+    <block type="bart_on_run"></block>
+  </category>
   <category name="Screen" colour="160">
     <block type="bart_put"></block>
     <block type="bart_clear"></block>

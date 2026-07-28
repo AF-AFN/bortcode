@@ -6,13 +6,10 @@ export const bartcodeGenerator = new Blockly.CodeGenerator('Bartcode');
 bartcodeGenerator.ORDER_ATOMIC = 0;
 bartcodeGenerator.ORDER_NONE = 99;
 
-/* CAPS */
+/* EVENTS */
 
-// unused
 bartcodeGenerator.forBlock['bart_on_run'] = function(block, generator) {
-  let nextBlock = block.nextConnection && block.nextConnection.targetBlock();
-  let nextCode = nextBlock ? generator.blockToCode(nextBlock) : '';
-  return nextCode;
+  return '';
 };
 
 /* COMMANDS */
@@ -36,7 +33,7 @@ bartcodeGenerator.forBlock['bart_move'] = function(block, generator) {
   let fromRow = generator.valueToCode(block, 'FROM_ROW', generator.ORDER_NONE) || '0';
   let toCol = generator.valueToCode(block, 'TO_COL', generator.ORDER_NONE) || '0';
   let toRow = generator.valueToCode(block, 'TO_ROW', generator.ORDER_NONE) || '0';
-  
+
   return 'MOVE(' + fromCol + ', ' + fromRow + ', ' + toCol + ', ' + toRow + ')\n';
 };
 
@@ -45,22 +42,22 @@ bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
   let doCode = generator.statementToCode(block, 'DO') || '';
   let mode = block.getFieldValue('MODE');
   let elseifCount = block.elseifCount_ || 0;
-  
+
   let code = 'IF ' + condition + '\n' + doCode;
-  
+
   // Handle elseif blocks
   for (let i = 1; i <= elseifCount; i++) {
     let elseifCondition = generator.valueToCode(block, 'ELSEIF' + i, generator.ORDER_NONE) || 'true';
     let elseifDo = generator.statementToCode(block, 'DO' + i) || '';
     code += 'ELSEIF ' + elseifCondition + '\n' + elseifDo;
   }
-  
+
   // Handle else block based on mode
   if (mode !== 'IF') {
     let elseCode = generator.statementToCode(block, 'ELSE') || '';
     code += 'ELSE\n' + elseCode;
   }
-  
+
   code += 'ENDIF\n';
   return code;
 };
@@ -70,12 +67,12 @@ bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
   let cases = generator.statementToCode(block, 'CASES') || '';
   let hasDefault = block.getFieldValue('HAS_DEFAULT') === 'YES';
   let code = 'SWITCH ' + value + '\n' + cases;
-  
+
   if (hasDefault) {
     let defaultCode = generator.statementToCode(block, 'DEFAULT') || '';
     code += 'DEFAULT\n' + defaultCode;
   }
-  
+
   code += 'ENDSWITCH\n';
   return code;
 };
@@ -83,14 +80,14 @@ bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
 bartcodeGenerator.forBlock['bart_repeat'] = function(block, generator) {
   var value_times = generator.valueToCode(block, 'TIMES', generator.ORDER_ATOMIC) || '0';
   var statements_do = generator.statementToCode(block, 'DO');
-  
+
   return `REPEAT (${value_times})\n${statements_do}ENDREPEAT\n`;
 };
 
 bartcodeGenerator.forBlock['bart_while'] = function(block, generator) {
   var value_condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_ATOMIC) || 'false';
   var statements_do = generator.statementToCode(block, 'DO');
-  
+
   return `WHILE (${value_condition})\n${statements_do}ENDWHILE\n`;
 };
 
@@ -182,10 +179,11 @@ bartcodeGenerator.forBlock['bart_load'] = function(block, generator) {
   return ['LOAD(' + addr + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
+/* FUNCTIONS */
 bartcodeGenerator.forBlock['bart_function'] = function(block, generator) {
   let name = block.getFieldValue('NAME');
-  let body = generator.statementToCode(block, 'BODY') || '';
-  return 'FUNCTION ' + name + '\n' + body + 'ENDFUNCTION\n';
+  let bodyCode = generator.statementToCode(block, 'BODY') || '';
+  return 'FUNCTION ' + name + '\n' + bodyCode + 'ENDFUNCTION\n';
 };
 
 bartcodeGenerator.forBlock['bart_call_function'] = function(block, generator) {
@@ -204,8 +202,8 @@ bartcodeGenerator.forBlock['bart_call_value'] = function(block, generator) {
 };
 
 bartcodeGenerator.forBlock['bart_return'] = function(block, generator) {
-  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
-  return 'RETURN ' + value + '\n';
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '';
+  return 'RETURN' + (value ? ' ' + value : '') + '\n';
 };
 
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
@@ -217,4 +215,46 @@ bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
     }
   }
   return code + nextCode;
+};
+
+const TOP_LEVEL_ROOT_TYPES = ['bart_on_run', 'bart_function'];
+
+bartcodeGenerator.workspaceToCode = function(workspace) {
+  if (!workspace) {
+    console.warn('No workspace specified in workspaceToCode call.');
+    workspace = Blockly.getMainWorkspace();
+  }
+
+  const codeLines = [];
+  this.init(workspace);
+
+  const topBlocks = workspace.getTopBlocks(true);
+  for (let i = 0; i < topBlocks.length; i++) {
+    const block = topBlocks[i];
+
+    if (!TOP_LEVEL_ROOT_TYPES.includes(block.type)) {
+      continue;
+    }
+
+    if (typeof block.isEnabled === 'function' && !block.isEnabled()) {
+      continue;
+    }
+
+    let line = this.blockToCode(block);
+    if (Array.isArray(line)) {
+      line = line[0];
+    }
+    if (line) {
+      codeLines.push(line);
+    }
+  }
+
+  let code = codeLines.join('\n');
+  code = this.finish(code);
+
+  code = code.replace(/^\s+\n/, '');
+  code = code.replace(/\n\s+$/, '\n');
+  code = code.replace(/[ \t]+\n/g, '\n');
+
+  return code;
 };

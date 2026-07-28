@@ -5,12 +5,13 @@ import * as Blockly from 'blockly';
 Blockly.Blocks['bart_on_run'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField('on run');
+        .appendField('When run');
     this.setPreviousStatement(false, null);
     this.setNextStatement(true, null);
     this.setColour(290);
-    this.setTooltip('Entry point when the program runs.');
+    this.setTooltip('Runs the attached blocks when the run button is clicked. Blocks not connected to this event will not run.');
     this.setHelpUrl('');
+    this.hat = 'cap';
   }
 };
 
