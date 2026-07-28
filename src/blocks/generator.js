@@ -7,10 +7,9 @@ bartcodeGenerator.ORDER_ATOMIC = 0;
 bartcodeGenerator.ORDER_NONE = 99;
 
 /* EVENTS */
+
 bartcodeGenerator.forBlock['bart_on_run'] = function(block, generator) {
-  let nextBlock = block.nextConnection && block.nextConnection.targetBlock();
-  let nextCode = nextBlock ? generator.blockToCode(nextBlock) : '';
-  return nextCode;
+  return '';
 };
 
 /* COMMANDS */
@@ -46,6 +45,7 @@ bartcodeGenerator.forBlock['bart_if_else'] = function(block, generator) {
 
   let code = 'IF ' + condition + '\n' + doCode;
 
+  // Handle elseif blocks
   for (let i = 1; i <= elseifCount; i++) {
     let elseifCondition = generator.valueToCode(block, 'ELSEIF' + i, generator.ORDER_NONE) || 'true';
     let elseifDo = generator.statementToCode(block, 'DO' + i) || '';
@@ -179,32 +179,6 @@ bartcodeGenerator.forBlock['bart_load'] = function(block, generator) {
   return ['LOAD(' + addr + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
-bartcodeGenerator.forBlock['bart_function'] = function(block, generator) {
-  let name = block.getFieldValue('NAME');
-  let body = generator.statementToCode(block, 'BODY') || '';
-  return 'FUNCTION ' + name + '\n' + body + 'ENDFUNCTION\n';
-};
-
-bartcodeGenerator.forBlock['bart_call_function'] = function(block, generator) {
-  let name = block.getFieldValue('NAME');
-  return 'CALL ' + name + '\n';
-};
-
-bartcodeGenerator.forBlock['bart_call_boolean'] = function(block, generator) {
-  let name = block.getFieldValue('NAME');
-  return ['CALL(' + name + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_call_value'] = function(block, generator) {
-  let name = block.getFieldValue('NAME');
-  return ['CALL(' + name + ')', bartcodeGenerator.ORDER_ATOMIC];
-};
-
-bartcodeGenerator.forBlock['bart_return'] = function(block, generator) {
-  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
-  return 'RETURN ' + value + '\n';
-};
-
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {
   let nextBlock = block.nextConnection && block.nextConnection.targetBlock();
   let nextCode = '';
@@ -229,11 +203,12 @@ bartcodeGenerator.workspaceToCode = function(workspace) {
   for (let i = 0; i < topBlocks.length; i++) {
     const block = topBlocks[i];
 
+    // skips anything not nested inside the when run event :^ 
     if (block.type !== 'bart_on_run') {
       continue;
     }
 
-
+    // Skip disabled event blocks too.
     if (typeof block.isEnabled === 'function' && !block.isEnabled()) {
       continue;
     }
