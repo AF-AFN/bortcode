@@ -592,3 +592,74 @@ Blockly.Blocks['bart_key_pressed'] = {
     this.setHelpUrl('');
   }
 };
+
+/* FUNCTIONS */
+
+Blockly.Blocks['bart_function'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('function')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.appendStatementInput('BODY')
+        .appendField('body');
+    this.setInputsInline(false);
+    this.setPreviousStatement(false, null);
+    this.setNextStatement(true, null);
+    this.setColour(20);
+    this.setTooltip('Defines a function that can be called by name.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_function'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(true, null);
+    this.setColour(20);
+    this.setTooltip('Calls a function by name.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_boolean'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setOutput(true, 'Boolean');
+    this.setColour(20);
+    this.setTooltip('Calls a function and returns a boolean value.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_call_value'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField('call')
+        .appendField(new Blockly.FieldTextInput('myFunction'), 'NAME');
+    this.setInputsInline(true);
+    this.setOutput(true, null);
+    this.setColour(20);
+    this.setTooltip('Calls a function and returns a string or number value.');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Blocks['bart_return'] = {
+  init: function() {
+    this.appendValueInput('VALUE')
+        .appendField('return');
+    this.setInputsInline(true);
+    this.setPreviousStatement(true, null);
+    this.setNextStatement(false, null);
+    this.setColour(20);
+    this.setTooltip('Returns a value from a function.');
+    this.setHelpUrl('');
+  }
+};

@@ -62,5 +62,26 @@ export const toolboxXML = `
       </value>
     </block>
   </category>
+  <category name="Functions" colour="20">
+    <block type="bart_function">
+      <field name="NAME">myFunction</field>
+    </block>
+    <block type="bart_call_function">
+      <field name="NAME">myFunction</field>
+    </block>
+    <block type="bart_call_boolean">
+      <field name="NAME">myFunction</field>
+    </block>
+    <block type="bart_call_value">
+      <field name="NAME">myFunction</field>
+    </block>
+    <block type="bart_return">
+      <value name="VALUE">
+        <block type="bart_number">
+          <field name="VALUE">0</field>
+        </block>
+      </value>
+    </block>
+  </category>
 </xml>
 `;

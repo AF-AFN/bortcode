@@ -10,6 +10,29 @@ export function runBartcode(code, onOutputUpdate, onRamUpdate) {
 
   let lines = code.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   
+  // Pre-scan for function definitions
+  let functions = {};
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith('FUNCTION ')) {
+      let name = lines[i].substring(9).trim();
+      let depth = 1;
+      let endLine = -1;
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].startsWith('FUNCTION ')) depth++;
+        if (lines[j] === 'ENDFUNCTION') {
+          depth--;
+          if (depth === 0) {
+            endLine = j;
+            break;
+          }
+        }
+      }
+      if (endLine !== -1) {
+        functions[name] = { startLine: i, endLine: endLine };
+      }
+    }
+  }
+  
   const WIDTH = 80;
   const HEIGHT = 30;
   let grid = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(' '));
@@ -24,6 +47,8 @@ export function runBartcode(code, onOutputUpdate, onRamUpdate) {
     width: WIDTH,
     height: HEIGHT,
     controlStack: [],
+    callStack: [],
+    functions: functions,
     pc: 0,
     lines: lines,
     memory: memory,
