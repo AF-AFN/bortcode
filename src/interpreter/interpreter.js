@@ -1,6 +1,8 @@
 import { primitiveSpecs } from './specs.js';
 
-export function runBartcode(code, onOutputUpdate) {
+const RAM_TOTAL = 524288;
+
+export function runBartcode(code, onOutputUpdate, onRamUpdate) {
   if (!code || typeof code !== 'string') {
     onOutputUpdate('ready...\n');
     return;
@@ -12,30 +14,47 @@ export function runBartcode(code, onOutputUpdate) {
   const HEIGHT = 30;
   let grid = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(' '));
 
+  const MEM_SIZE = 512;
+  let memory = Array(MEM_SIZE).fill(null);
+  let initialRam = 0;
+
   let context = {
     outputBuffer: '',
     grid: grid,
     width: WIDTH,
     height: HEIGHT,
-    controlStack: [] 
+    controlStack: [],
+    pc: 0,
+    lines: lines,
+    memory: memory,
+    ramUsed: initialRam,
+    ramTotal: RAM_TOTAL,
+    ramError: null
   };
 
-  let pc = 0;
-
-  const CONTROL_KEYWORDS = ['IF', 'ELSE', 'ENDIF', 'REPEAT', 'ENDREPEAT'];
+  const CONTROL_KEYWORDS = ['IF', 'ELSE', 'ENDIF', 'REPEAT', 'ENDREPEAT', 'WHILE', 'ENDWHILE'];
 
   function renderGrid() {
     return context.grid.map(row => row.join('')).join('\n');
   }
 
+  function notifyRam() {
+    if (onRamUpdate) onRamUpdate(context.ramUsed, context.ramTotal);
+  }
+
   function step() {
-    if (pc >= lines.length) {
+    if (context.ramError) {
+      onOutputUpdate('ERR: ' + context.ramError);
+      return;
+    }
+
+    if (context.pc >= context.lines.length) {
       onOutputUpdate(renderGrid());
       return;
     }
 
-    let line = lines[pc];
-    pc++;
+    let line = context.lines[context.pc];
+    context.pc++;
 
     let spaceIndex = line.indexOf(' ');
     let parenIndex = line.indexOf('(');
@@ -57,6 +76,7 @@ export function runBartcode(code, onOutputUpdate) {
 
         if (typeof result === 'number' && result > 0) {
           onOutputUpdate(renderGrid());
+          notifyRam();
           setTimeout(step, result);
           return;
         }
@@ -64,8 +84,9 @@ export function runBartcode(code, onOutputUpdate) {
     }
 
     onOutputUpdate(renderGrid());
-    step();
+    notifyRam();
+    setTimeout(step, 0);
   }
 
-  step();
+  setTimeout(step, 0);
 }

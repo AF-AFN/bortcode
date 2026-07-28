@@ -80,6 +80,20 @@ bartcodeGenerator.forBlock['bart_switch_case'] = function(block, generator) {
   return code;
 };
 
+bartcodeGenerator.forBlock['bart_repeat'] = function(block, generator) {
+  var value_times = generator.valueToCode(block, 'TIMES', generator.ORDER_ATOMIC) || '0';
+  var statements_do = generator.statementToCode(block, 'DO');
+  
+  return `REPEAT (${value_times})\n${statements_do}ENDREPEAT\n`;
+};
+
+bartcodeGenerator.forBlock['bart_while'] = function(block, generator) {
+  var value_condition = generator.valueToCode(block, 'CONDITION', generator.ORDER_ATOMIC) || 'false';
+  var statements_do = generator.statementToCode(block, 'DO');
+  
+  return `WHILE (${value_condition})\n${statements_do}ENDWHILE\n`;
+};
+
 /* ARGUMENTS */
 
 bartcodeGenerator.forBlock['bart_string'] = function(block, generator) {
@@ -138,6 +152,34 @@ bartcodeGenerator.forBlock['bart_equals'] = function(block, generator) {
   let a = generator.valueToCode(block, 'A', generator.ORDER_NONE) || '0';
   let b = generator.valueToCode(block, 'B', generator.ORDER_NONE) || '0';
   return ['EQ(' + a + ', ' + b + ')', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_key_pressed'] = function(block, generator) {
+  let key = block.getFieldValue('KEY');
+  return ['KEYPRESSED("' + key + '")', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_true'] = function(block, generator) {
+  return ['true', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_false'] = function(block, generator) {
+  return ['false', bartcodeGenerator.ORDER_ATOMIC];
+};
+
+bartcodeGenerator.forBlock['bart_flush_ram'] = function(block, generator) {
+  return 'FLUSHRAM\n';
+};
+
+bartcodeGenerator.forBlock['bart_store'] = function(block, generator) {
+  let addr = generator.valueToCode(block, 'ADDR', generator.ORDER_ATOMIC) || '0';
+  let value = generator.valueToCode(block, 'VALUE', generator.ORDER_NONE) || '0';
+  return 'STORE(' + addr + ', ' + value + ')\n';
+};
+
+bartcodeGenerator.forBlock['bart_load'] = function(block, generator) {
+  let addr = generator.valueToCode(block, 'ADDR', generator.ORDER_ATOMIC) || '0';
+  return ['LOAD(' + addr + ')', bartcodeGenerator.ORDER_ATOMIC];
 };
 
 bartcodeGenerator.scrub_ = function(block, code, thisOnly) {

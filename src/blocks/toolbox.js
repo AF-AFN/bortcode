@@ -20,7 +20,7 @@ export const toolboxXML = `
     <block type="bart_switch_case"></block>
   </category>
   <category name="Sensing" colour="290">
-    <block type="bart_input"></block>
+    <block type="bart_key_pressed"></block>
   </category>
   <category name="Strings" colour="160">
     <block type="bart_string"></block>
@@ -37,6 +37,30 @@ export const toolboxXML = `
     <block type="bart_logic_op"></block>
     <block type="bart_not"></block>
     <block type="bart_equals"></block>
+    <block type="bart_true"></block>
+    <block type="bart_false"></block>
+  </category>
+  <category name="Memory" colour="330">
+    <block type="bart_store">
+      <value name="ADDR">
+        <block type="bart_number">
+          <field name="VALUE">0</field>
+        </block>
+      </value>
+      <value name="VALUE">
+        <block type="bart_number">
+          <field name="VALUE">0</field>
+        </block>
+      </value>
+    </block>
+    <block type="bart_flush_ram"></block>
+    <block type="bart_load">
+      <value name="ADDR">
+        <block type="bart_number">
+          <field name="VALUE">0</field>
+        </block>
+      </value>
+    </block>
   </category>
 </xml>
 `;

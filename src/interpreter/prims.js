@@ -1,3 +1,5 @@
+import { isKeyPressed } from '../keyboard.js';
+
 export function primPut(arg, context) {
   let textVal = evaluateExpression(arg, context);
   context.cursorX = context.cursorX || 0;
@@ -76,6 +78,138 @@ export function primEndswitch(arg, context) {
   context.controlStack.pop();
 }
 
+export function primRepeat(arg, context) {
+  let inner = arg.trim();
+  if (inner.startsWith('(') && inner.endsWith(')')) {
+    inner = inner.substring(1, inner.length - 1);
+  }
+  let count = parseInt(evaluateExpression(inner, context), 10) || 0;
+
+  if (count <= 0) {
+    let depth = 1;
+    while (context.pc < context.lines.length) {
+      let l = context.lines[context.pc];
+      if (l.startsWith('REPEAT') || l.startsWith('WHILE')) depth++;
+      if (l.startsWith('ENDREPEAT') || l.startsWith('ENDWHILE')) {
+        depth--;
+        if (depth === 0) {
+          context.pc++;
+          break;
+        }
+      }
+      context.pc++;
+    }
+  } else {
+    context.controlStack.push({
+      type: 'REPEAT',
+      counter: count,
+      startPc: context.pc
+    });
+  }
+}
+
+export function primEndRepeat(arg, context) {
+  let top = context.controlStack[context.controlStack.length - 1];
+  if (top && top.type === 'REPEAT') {
+    top.counter--;
+    if (top.counter > 0) {
+      context.pc = top.startPc;
+    } else {
+      context.controlStack.pop();
+    }
+  }
+}
+
+export function primWhile(arg, context) {
+  let inner = arg.trim();
+  if (inner.startsWith('(') && inner.endsWith(')')) {
+    inner = inner.substring(1, inner.length - 1);
+  }
+  let condition = evaluateExpression(inner, context);
+  let isTrue = condition === true || condition === 'true' || condition === '1';
+
+  if (!isTrue) {
+    let depth = 1;
+    while (context.pc < context.lines.length) {
+      let l = context.lines[context.pc];
+      if (l.startsWith('REPEAT') || l.startsWith('WHILE')) depth++;
+      if (l.startsWith('ENDREPEAT') || l.startsWith('ENDWHILE')) {
+        depth--;
+        if (depth === 0) {
+          context.pc++;
+          break;
+        }
+      }
+      context.pc++;
+    }
+  } else {
+    context.controlStack.push({
+      type: 'WHILE',
+      startPc: context.pc,
+      conditionExpr: inner
+    });
+  }
+}
+
+export function primEndWhile(arg, context) {
+  let top = context.controlStack[context.controlStack.length - 1];
+  if (top && top.type === 'WHILE') {
+    let condition = evaluateExpression(top.conditionExpr, context);
+    let isTrue = condition === true || condition === 'true' || condition === '1';
+    if (isTrue) {
+      context.pc = top.startPc;
+    } else {
+      context.controlStack.pop();
+    }
+  }
+}
+
+const MEM_SIZE = 512;
+
+function getMemSize(value) {
+  if (value == null) return 0;
+  if (typeof value === 'string') {
+    return Math.max(value.length, 1);
+  }
+  return 8;
+}
+
+function updateMem(addr, newValue, context) {
+  let oldValue = context.memory[addr];
+  let delta = getMemSize(newValue) - getMemSize(oldValue);
+
+  if (context.ramUsed + delta > context.ramTotal) {
+    context.ramError = 'RAM overflow at address ' + addr + ' (need ' + (context.ramUsed + delta) + ' bytes, only ' + context.ramTotal + ' available)';
+    return;
+  }
+
+  context.ramUsed += delta;
+  context.memory[addr] = newValue;
+}
+
+export function primFlushRam(arg, context) {
+  context.memory = Array(MEM_SIZE).fill(null);
+  context.ramUsed = 0;
+}
+
+export function primStore(arg, context) {
+  let inner = arg.trim();
+  if (inner.startsWith('(') && inner.endsWith(')')) {
+    inner = inner.substring(1, inner.length - 1);
+  }
+  let parts = splitByCommaOutsideQuotes(inner);
+  if (parts.length < 2) return;
+  let addrExpr = parts[0].trim();
+  let valueExpr = parts.slice(1).join(',').trim();
+  let addr = parseInt(evaluateExpression(addrExpr, context), 10);
+  if (isNaN(addr) || addr < 0 || addr >= MEM_SIZE) {
+    context.ramError = 'invalid memory address: ' + addr;
+    return;
+  }
+  let value = evaluateExpression(valueExpr, context);
+  updateMem(addr, value, context);
+}
+
 function evaluateExpression(expr, context) {
   if (!expr) return '';
   expr = expr.trim();
@@ -148,6 +282,21 @@ function evaluateExpression(expr, context) {
     return evaluateExpression(leftExpr, context) + evaluateExpression(rightExpr, context);
   }
 
+  // KEYPRESSED
+  if (expr.startsWith('KEYPRESSED(') && expr.endsWith(')')) {
+    let inner = expr.substring(11, expr.length - 1);
+    let key = evaluateExpression(inner, context);
+    return isKeyPressed(key) ? 'true' : 'false';
+  }
+
+  // LOAD
+  if (expr.startsWith('LOAD(') && expr.endsWith(')')) {
+    let inner = expr.substring(5, expr.length - 1);
+    let addr = parseInt(evaluateExpression(inner.trim(), context), 10);
+    if (isNaN(addr) || addr < 0 || addr >= MEM_SIZE) return '0';
+    return context.memory[addr] || '0';
+  }
+
   if ((expr.startsWith('"') && expr.endsWith('"')) || 
       (expr.startsWith("'") && expr.endsWith("'"))) {
     return expr.slice(1, -1);
@@ -183,6 +332,7 @@ function splitByCommaOutsideQuotes(str) {
   let current = '';
   let inQuotes = false;
   let quoteChar = '';
+  let parenDepth = 0;
   
   for (let i = 0; i < str.length; i++) {
     let char = str[i];
@@ -195,7 +345,12 @@ function splitByCommaOutsideQuotes(str) {
       }
     }
     
-    if (char === ',' && !inQuotes) {
+    if (!inQuotes) {
+      if (char === '(') parenDepth++;
+      if (char === ')') parenDepth--;
+    }
+    
+    if (char === ',' && !inQuotes && parenDepth === 0) {
       result.push(current);
       current = '';
     } else {
@@ -209,6 +364,7 @@ function splitByCommaOutsideQuotes(str) {
 function findCommaSplitIndex(str) {
   let inQuotes = false;
   let quoteChar = '';
+  let parenDepth = 0;
   
   for (let i = 0; i < str.length; i++) {
     let char = str[i];
@@ -220,7 +376,11 @@ function findCommaSplitIndex(str) {
         inQuotes = false;
       }
     }
-    if (char === ',' && !inQuotes) {
+    if (!inQuotes) {
+      if (char === '(') parenDepth++;
+      if (char === ')') parenDepth--;
+    }
+    if (char === ',' && !inQuotes && parenDepth === 0) {
       return i;
     }
   }
