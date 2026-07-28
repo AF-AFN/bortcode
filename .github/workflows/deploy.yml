@@ -1,4 +1,4 @@
-name: Deploy to shithub paiges
+name: Deploy to shithub
 
 on:
   push:
@@ -23,9 +23,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - id: pages
-        uses: actions/configure-pages@v5
-      - run: npm run build -- --base=${{ steps.pages.outputs.base_url }}
+      - name: Build
+        run: npm run build -- --base=/${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
