@@ -7,7 +7,7 @@
 
 body {
   margin: 0;
-  background: #1e1e1e;
+  background: #180505;
   overflow: hidden;
 }
 
@@ -16,9 +16,9 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 50px;
-  background: #2d2d2d;
+  background: #3b0b0b;
   padding: 0 15px;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #6a1a1a;
   font-family: system-ui, -apple-system, sans-serif;
   user-select: none;
 }
@@ -33,7 +33,7 @@ body {
   font-size: 1.2rem;
   font-weight: bold;
   font-family: monospace;
-  color: #00ff66;
+  color: #ff5555;
   letter-spacing: 1px;
 }
 
@@ -45,16 +45,16 @@ body {
   padding: 6px 14px;
   font-size: 0.95rem;
   font-weight: bold;
-  background: #3a3a3a;
-  color: #eee;
-  border: 1px solid #555;
+  background: #5a1111;
+  color: #f5f5f5;
+  border: 1px solid #8c2b2b;
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.2s;
 }
 
 .file-btn:hover {
-  background: #444;
+  background: #7a1b1b;
 }
 
 .file-dropdown {
@@ -62,8 +62,8 @@ body {
   top: 100%;
   left: 0;
   margin-top: 4px;
-  background: #3a3a3a;
-  border: 1px solid #555;
+  background: #4d1010;
+  border: 1px solid #8c2b2b;
   border-radius: 4px;
   min-width: 140px;
   z-index: 1000;
@@ -84,7 +84,7 @@ body {
 }
 
 .dropdown-item:hover {
-  background: #505050;
+  background: #742020;
 }
 
 .toolbar {
@@ -97,29 +97,29 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #ccc;
+  color: #f2b5b5;
   font-size: 0.85rem;
 }
 
 .renderer-label select {
   padding: 4px 8px;
   font-size: 0.85rem;
-  background: #3a3a3a;
+  background: #5a1111;
   color: #eee;
-  border: 1px solid #555;
+  border: 1px solid #8c2b2b;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .renderer-label select:hover {
-  background: #444;
+  background: #7a1b1b;
 }
 
 .toolbar button {
   padding: 6px 14px;
   font-size: 0.95rem;
   font-weight: bold;
-  background: #28a745;
+  background: #c62828;
   color: white;
   border: none;
   cursor: pointer;
@@ -128,19 +128,19 @@ body {
 }
 
 .toolbar button:hover {
-  background: #218838;
+  background: #e53935;
 }
 
 .toolbar button.stop-btn {
-  background: #dc3545;
+  background: #8b0000;
 }
 
 .toolbar button.stop-btn:hover {
-  background: #c82333;
+  background: #a40000;
 }
 
 .toolbar button.stop-btn:disabled {
-  background: #6c757d;
+  background: #5f3a3a;
   cursor: default;
 }
 
@@ -154,7 +154,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(20, 0, 0, 0.65);
   z-index: 10000;
 }
 
@@ -163,14 +163,14 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #2d2d2d;
-  border: 1px solid #555;
+  background: #2f0808;
+  border: 1px solid #7a1b1b;
   border-radius: 8px;
   min-width: 320px;
   z-index: 10001;
   font-family: system-ui, -apple-system, sans-serif;
   color: #eee;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(80, 0, 0, 0.6);
 }
 
 .modal-header {
@@ -178,7 +178,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid #6a1a1a;
   font-weight: bold;
   font-size: 1rem;
 }
@@ -186,7 +186,7 @@ body {
 .modal-close {
   background: none;
   border: none;
-  color: #aaa;
+  color: #d8a0a0;
   font-size: 1.4rem;
   cursor: pointer;
   padding: 0 4px;
@@ -232,8 +232,8 @@ body {
 .console {
   width: calc(80ch + 30px);
   height: calc(30 * 1.2em + 30px);
-  background: #0c0c0c;
-  color: #00ff66;
+  background: #120000;
+  color: #ff4d4d;
   font-family: 'IBMFont', monospace;
   font-size: 16px;
   line-height: 1.2;
@@ -241,9 +241,9 @@ body {
   box-sizing: border-box;
   white-space: pre;
   overflow: hidden;
-  border: 1px solid #444;
+  border: 1px solid #7a1b1b;
   border-radius: 6px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 12px rgba(255, 0, 0, 0.25);
   flex-shrink: 0;
   position: relative;
   isolation: isolate;
