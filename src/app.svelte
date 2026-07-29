@@ -15,30 +15,38 @@
   let consoleOutput = 'ready...\n';
   let ramUsed = 0;
   let ramTotal = 524288;
-  let renderer = localStorage.getItem('bartcode_renderer') || 'zelos';
+  let renderer = 'zelos';
   let running = false;
   let stopBartcode = null;
   let fileOpen = false;
   let fileInput;
   let toolsOpen = false;
   let prefsOpen = false;
-  let shadersEnabled = localStorage.getItem('bartcode_shaders') === 'true';
+  let shadersEnabled = false;
 
   function handleRun() {
     if (running && stopBartcode) {
       stopBartcode.stop();
     }
+
     const code = bartcodeGenerator.workspaceToCode(workspace);
+
     running = true;
-    stopBartcode = runBartcode(code, (newOutput) => {
-      consoleOutput = newOutput;
-    }, (used, total) => {
-      ramUsed = used;
-      ramTotal = total;
-    }, () => {
-      running = false;
-      stopBartcode = null;
-    });
+
+    stopBartcode = runBartcode(
+      code,
+      (newOutput) => {
+        consoleOutput = newOutput;
+      },
+      (used, total) => {
+        ramUsed = used;
+        ramTotal = total;
+      },
+      () => {
+        running = false;
+        stopBartcode = null;
+      }
+    );
   }
 
   function handleStop() {
@@ -46,96 +54,68 @@
       stopBartcode.stop();
       stopBartcode = null;
     }
+
     running = false;
   }
 
   function handleRendererChange(e) {
-    let newRenderer = e.target.value;
+    const newRenderer = e.target.value;
+
     if (newRenderer === renderer) return;
+
     localStorage.setItem('bartcode_renderer', newRenderer);
-    let state = Blockly.serialization.workspaces.save(workspace);
+
+    const state = Blockly.serialization.workspaces.save(workspace);
+
     workspace.dispose();
+
     renderer = newRenderer;
+
     workspace = Blockly.inject(blocklyDiv, {
       toolbox: toolboxXML,
-      renderer: renderer,
+      renderer,
       theme: Blockly.Theme.defineTheme('scratchTheme', {
-        'base': Blockly.Themes.Classic,
-        'startHats': true
+        base: Blockly.Themes.Classic,
+        startHats: true
       })
     });
+
     Blockly.serialization.workspaces.load(state, workspace);
   }
 
-  function handleSave() {
-    fileOpen = false;
-    let state = Blockly.serialization.workspaces.save(workspace);
-    let json = JSON.stringify(state, null, 2);
-    let blob = new Blob([json], { type: 'application/json' });
-    let url = URL.createObjectURL(blob);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = 'project.bcp';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function handleLoad(e) {
-    fileOpen = false;
-    let file = e.target.files[0];
-    if (!file) return;
-    let reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        let state = JSON.parse(event.target.result);
-        Blockly.serialization.workspaces.load(state, workspace);
-      } catch (err) {
-        alert('Failed to load project: ' + err.message);
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  }
-
-  function handleKeydown(e) {
-    if (e.ctrlKey && e.key === 's') {
-      e.preventDefault();
-      handleSave();
-    }
-    if (e.key === 'Escape') {
-      prefsOpen = false;
-      toolsOpen = false;
-    }
-  }
-
-  function closeMenus(e) {
-    if (fileOpen && !e.target.closest('.file-menu')) {
-      fileOpen = false;
-    }
-    if (toolsOpen && !e.target.closest('.tools-menu') && !e.target.closest('.modal-overlay') && !e.target.closest('.modal')) {
-      toolsOpen = false;
-    }
-  }
-
-  function closePrefs() {
-    prefsOpen = false;
-    toolsOpen = false;
-  }
-
   onMount(() => {
+    renderer = localStorage.getItem('bartcode_renderer') || 'zelos';
+    shadersEnabled = localStorage.getItem('bartcode_shaders') === 'true';
+
     initKeyboard();
-    workspace = Blockly.inject(blocklyDiv, {
-      toolbox: toolboxXML,
-      renderer: renderer,
-      theme: Blockly.Theme.defineTheme('scratchTheme', {
-        'base': Blockly.Themes.Classic,
-        'startHats': true
-      })
-    });
+
+    try {
+      workspace = Blockly.inject(blocklyDiv, {
+        toolbox: toolboxXML,
+        renderer,
+        theme: Blockly.Theme.defineTheme('scratchTheme', {
+          base: Blockly.Themes.Classic,
+          startHats: true
+        })
+      });
+
+      console.log('Blockly loaded successfully');
+    } catch (err) {
+      console.error('Blockly failed:', err);
+      consoleOutput = 'Failed to load Blockly:\n' + err.message;
+    }
+
     document.addEventListener('keydown', handleKeydown);
     document.addEventListener('click', closeMenus);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeydown);
+      document.removeEventListener('click', closeMenus);
+
+      if (workspace) {
+        workspace.dispose();
+      }
+    };
   });
 </script>
 
