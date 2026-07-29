@@ -1,3 +1,23 @@
-# Bartcode
-Bartcode lets you program a virtual computer in your web browser, using blocks.
-Think of it like Scratch, but more efficient.
+# Bortcode
+Bortcode is a fork of Bartcode, a simulated low level computer using blocks.
+
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
+# What The Bort?
